@@ -1,5 +1,6 @@
 import { renderCirclesMap } from './map.js';
 import { renderPlacesMap } from './places.js';
+import { renderTablesMap } from './tables.js';
 
 const API = 'https://talasaman.is/api/v1';
 
@@ -11,8 +12,12 @@ const PAGES = [
   {
     id: 'circles',
     title: 'Circles',
-    intro: 'The ring structure under Ísland: one ring per postcode, one per event location, and the facilitators (Lóðsar). Each ring shows its active member count. Here the postcode rings are drawn on a map.',
-    render: renderCirclesMap,
+    intro: 'The ring structure under Ísland: one ring per postcode, one per event location, and the facilitators (Lóðsar). Each ring shows its active member count. Here the postcode rings are drawn on a map, followed by the event locations and their tables.',
+    render: async (rows, buildTable) => {
+      const [root, tables] = await Promise.all([renderCirclesMap(rows, buildTable), renderTablesMap()]);
+      root.insertBefore(tables, root.querySelector('.table-toggle'));
+      return root;
+    },
   },
   {
     id: 'places',

@@ -8,7 +8,7 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 const DRAW_ORDER = ['coast', 'glacier', 'lake', 'river']; // land first, water and ice on top
 
 let basePromise;
-function loadBase() {
+export function loadBase() {
   basePromise ??= fetch('iceland.geojson').then((r) => {
     if (!r.ok) throw new Error(`iceland.geojson: HTTP ${r.status}`);
     return r.json();
@@ -16,7 +16,7 @@ function loadBase() {
   return basePromise;
 }
 
-function extentOf(features) {
+export function extentOf(features) {
   let west = Infinity, east = -Infinity, south = Infinity, north = -Infinity;
   for (const f of features) {
     const polygons = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;

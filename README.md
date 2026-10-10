@@ -45,6 +45,21 @@ npx mapshaper raw.geojson -filter-fields postnumer,stadur -simplify 6% keep-shap
 | `lake` | `vatnafar_flakar` | `yfirbordsvatn=3`, > 2 km² |
 | `river` | `vatnafar_flakar` | `yfirbordsvatn=1` (wide rivers drawn as areas), dissolved, > 1 km² |
 
+### Locations and tables
+
+`tables.json` holds the event locations, their tables, and how many people sat at each table.
+The API doesn't include tables, so the data comes from the graph built into the talasaman.is/hringir page.
+`scripts/update-tables.py` refreshes it and reads **only** the page's structure (`nodes` and `links`).
+The page also contains people and membership data, which the script never reads or stores.
+Location coordinates were looked up with OpenStreetMap Nominatim and are kept between refreshes.
+A new location is reported with no coordinates and has to be looked up by hand.
+
+```bash
+python3 scripts/update-tables.py
+```
+
+These counts are people seated at tables, which differs from the API's registered member counts.
+
 ## Themes
 
 Both themes use talasaman.is's own colours (its `--color-*` CSS variables).

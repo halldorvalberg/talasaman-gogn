@@ -1,0 +1,521 @@
+{
+ "source": "https://talasaman.is/hringir",
+ "locations": [
+  {
+   "name": "Bessastaðir",
+   "lat": 64.1061,
+   "lng": -21.995,
+   "members": 7,
+   "tables": [
+    {
+     "number": 1,
+     "members": 7
+    }
+   ]
+  },
+  {
+   "name": "Borgarholtsskóli",
+   "lat": 64.1503,
+   "lng": -21.7849,
+   "members": 2,
+   "tables": [
+    {
+     "number": 1,
+     "members": 2
+    }
+   ]
+  },
+  {
+   "name": "Fjölbrautaskóli Norðurlands vestra",
+   "lat": 65.741,
+   "lng": -19.6427,
+   "members": 21,
+   "tables": [
+    {
+     "number": 1,
+     "members": 7
+    },
+    {
+     "number": 2,
+     "members": 7
+    },
+    {
+     "number": 3,
+     "members": 7
+    }
+   ]
+  },
+  {
+   "name": "Fjölbrautaskóli Suðurlands",
+   "lat": 63.9329,
+   "lng": -20.9973,
+   "members": 18,
+   "tables": [
+    {
+     "number": 1,
+     "members": 5
+    },
+    {
+     "number": 2,
+     "members": 5
+    },
+    {
+     "number": 3,
+     "members": 4
+    }
+   ]
+  },
+  {
+   "name": "Fjölbrautaskóli Suðurnesja",
+   "lat": 63.9967,
+   "lng": -22.5617,
+   "members": 21,
+   "tables": [
+    {
+     "number": 1,
+     "members": 8
+    },
+    {
+     "number": 2,
+     "members": 8
+    },
+    {
+     "number": 3,
+     "members": 5
+    }
+   ]
+  },
+  {
+   "name": "Fjölbrautaskóli Vesturlands",
+   "lat": 64.3237,
+   "lng": -22.0745,
+   "members": 29,
+   "tables": [
+    {
+     "number": 1,
+     "members": 8
+    },
+    {
+     "number": 2,
+     "members": 7
+    },
+    {
+     "number": 3,
+     "members": 14
+    }
+   ]
+  },
+  {
+   "name": "Fjölbrautaskólinn í Breiðholti",
+   "lat": 64.1058,
+   "lng": -21.8184,
+   "members": 5,
+   "tables": [
+    {
+     "number": 1,
+     "members": 5
+    }
+   ]
+  },
+  {
+   "name": "Fjölbrautaskólinn í Garðabæ",
+   "lat": 64.0941,
+   "lng": -21.9032,
+   "members": 16,
+   "tables": [
+    {
+     "number": 1,
+     "members": 6
+    },
+    {
+     "number": 2,
+     "members": 5
+    },
+    {
+     "number": 3,
+     "members": 5
+    }
+   ]
+  },
+  {
+   "name": "Flensborgarskólinn í Hafnarfirði",
+   "lat": 64.0648,
+   "lng": -21.9506,
+   "members": 41,
+   "tables": [
+    {
+     "number": 1,
+     "members": 8
+    },
+    {
+     "number": 2,
+     "members": 9
+    },
+    {
+     "number": 3,
+     "members": 10
+    },
+    {
+     "number": 4,
+     "members": 9
+    },
+    {
+     "number": 5,
+     "members": 5
+    }
+   ]
+  },
+  {
+   "name": "Framhaldsskólinn á Húsavík",
+   "lat": 66.0458,
+   "lng": -17.3341,
+   "members": 10,
+   "tables": [
+    {
+     "number": 1,
+     "members": 10
+    }
+   ]
+  },
+  {
+   "name": "Framhaldsskólinn á Laugum",
+   "lat": 65.7226,
+   "lng": -17.3596,
+   "members": 25,
+   "tables": [
+    {
+     "number": 1,
+     "members": 4
+    },
+    {
+     "number": 2,
+     "members": 7
+    },
+    {
+     "number": 3,
+     "members": 6
+    },
+    {
+     "number": 4,
+     "members": 8
+    }
+   ]
+  },
+  {
+   "name": "Framhaldsskólinn í Mosfellsbæ",
+   "lat": 64.1652,
+   "lng": -21.7041,
+   "members": 8,
+   "tables": [
+    {
+     "number": 2,
+     "members": 8
+    }
+   ]
+  },
+  {
+   "name": "Framhaldsskólinn í Vestmannaeyjum",
+   "lat": 63.4353,
+   "lng": -20.2716,
+   "members": 34,
+   "tables": [
+    {
+     "number": 1,
+     "members": 7
+    },
+    {
+     "number": 2,
+     "members": 6
+    },
+    {
+     "number": 3,
+     "members": 6
+    },
+    {
+     "number": 4,
+     "members": 8
+    },
+    {
+     "number": 5,
+     "members": 7
+    }
+   ]
+  },
+  {
+   "name": "Hannesarholt",
+   "lat": 64.1443,
+   "lng": -21.9356,
+   "members": 10,
+   "tables": [
+    {
+     "number": 1,
+     "members": 10
+    }
+   ]
+  },
+  {
+   "name": "Háskóli Íslands",
+   "lat": 64.1402,
+   "lng": -21.954,
+   "members": 78,
+   "tables": [
+    {
+     "number": 1,
+     "members": 6
+    },
+    {
+     "number": 2,
+     "members": 7
+    },
+    {
+     "number": 3,
+     "members": 9
+    },
+    {
+     "number": 4,
+     "members": 6
+    },
+    {
+     "number": 5,
+     "members": 7
+    },
+    {
+     "number": 6,
+     "members": 7
+    },
+    {
+     "number": 7,
+     "members": 7
+    },
+    {
+     "number": 8,
+     "members": 7
+    },
+    {
+     "number": 9,
+     "members": 7
+    },
+    {
+     "number": 11,
+     "members": 6
+    },
+    {
+     "number": 12,
+     "members": 8
+    }
+   ]
+  },
+  {
+   "name": "Kvennaskólinn í Reykjavík",
+   "lat": 64.1439,
+   "lng": -21.9388,
+   "members": 24,
+   "tables": [
+    {
+     "number": 1,
+     "members": 8
+    },
+    {
+     "number": 2,
+     "members": 6
+    },
+    {
+     "number": 3,
+     "members": 6
+    },
+    {
+     "number": 4,
+     "members": 4
+    }
+   ]
+  },
+  {
+   "name": "Menntaskólinn við Sund",
+   "lat": 64.1312,
+   "lng": -21.8592,
+   "members": 70,
+   "tables": [
+    {
+     "number": 1,
+     "members": 6
+    },
+    {
+     "number": 2,
+     "members": 6
+    },
+    {
+     "number": 3,
+     "members": 6
+    },
+    {
+     "number": 4,
+     "members": 6
+    },
+    {
+     "number": 5,
+     "members": 6
+    },
+    {
+     "number": 6,
+     "members": 6
+    },
+    {
+     "number": 7,
+     "members": 6
+    },
+    {
+     "number": 8,
+     "members": 5
+    },
+    {
+     "number": 9,
+     "members": 4
+    },
+    {
+     "number": 10,
+     "members": 4
+    },
+    {
+     "number": 11,
+     "members": 5
+    },
+    {
+     "number": 12,
+     "members": 5
+    },
+    {
+     "number": 13,
+     "members": 5
+    }
+   ]
+  },
+  {
+   "name": "Menntaskólinn á Akureyri",
+   "lat": 65.6764,
+   "lng": -18.0952,
+   "members": 31,
+   "tables": [
+    {
+     "number": 1,
+     "members": 5
+    },
+    {
+     "number": 2,
+     "members": 6
+    },
+    {
+     "number": 3,
+     "members": 5
+    },
+    {
+     "number": 4,
+     "members": 5
+    },
+    {
+     "number": 5,
+     "members": 8
+    }
+   ]
+  },
+  {
+   "name": "Menntaskólinn á Ísafirði",
+   "lat": 66.0738,
+   "lng": -23.1319,
+   "members": 25,
+   "tables": [
+    {
+     "number": 1,
+     "members": 9
+    },
+    {
+     "number": 2,
+     "members": 8
+    },
+    {
+     "number": 3,
+     "members": 8
+    }
+   ]
+  },
+  {
+   "name": "Menntaskólinn í Kópavogi",
+   "lat": 64.1108,
+   "lng": -21.8949,
+   "members": 34,
+   "tables": [
+    {
+     "number": 1,
+     "members": 9
+    },
+    {
+     "number": 2,
+     "members": 8
+    },
+    {
+     "number": 3,
+     "members": 8
+    },
+    {
+     "number": 4,
+     "members": 7
+    }
+   ]
+  },
+  {
+   "name": "Menntaskólinn í Reykjavík",
+   "lat": 64.1459,
+   "lng": -21.9363,
+   "members": 25,
+   "tables": [
+    {
+     "number": 1,
+     "members": 7
+    },
+    {
+     "number": 2,
+     "members": 5
+    },
+    {
+     "number": 3,
+     "members": 7
+    },
+    {
+     "number": 4,
+     "members": 6
+    }
+   ]
+  },
+  {
+   "name": "Tækniskólinn",
+   "lat": 64.1425,
+   "lng": -21.9251,
+   "members": 17,
+   "tables": [
+    {
+     "number": 1,
+     "members": 9
+    },
+    {
+     "number": 2,
+     "members": 8
+    }
+   ]
+  },
+  {
+   "name": "Verzlunarskóli Íslands",
+   "lat": 64.1279,
+   "lng": -21.896,
+   "members": 18,
+   "tables": [
+    {
+     "number": 1,
+     "members": 9
+    },
+    {
+     "number": 2,
+     "members": 9
+    }
+   ]
+  }
+ ]
+}
