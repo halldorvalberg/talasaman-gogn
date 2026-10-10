@@ -133,10 +133,10 @@ export async function renderPlacesMap(rows, buildTable) {
   }
 
   let anim = 0;
-  function setView(target, animate = false) {
+  function setView(target, animate = false, { duration = 380, onDone } = {}) {
     const to = clampView(target);
     cancelAnimationFrame(anim);
-    if (!animate || reduceMotion) { Object.assign(view, to); draw(); return; }
+    if (!animate || reduceMotion) { Object.assign(view, to); draw(); onDone?.(); return; }
     // Animate the view's centre and zoom (log space), not the raw pan offsets,
     // so the point being zoomed into stays on screen the whole way.
     const centre = (v) => [(0.5 - v.ux) / v.k, (0.5 - v.uy) / v.k];
@@ -144,13 +144,14 @@ export async function renderPlacesMap(rows, buildTable) {
     const k0 = view.k;
     const t0 = performance.now();
     const step = (now) => {
-      const t = Math.min(1, (now - t0) / 380);
+      const t = Math.min(1, (now - t0) / duration);
       const e = 1 - (1 - t) ** 3;
       const k = Math.exp(Math.log(k0) + (Math.log(to.k) - Math.log(k0)) * e);
       const cx = fx0 + (fx1 - fx0) * e, cy = fy0 + (fy1 - fy0) * e;
       Object.assign(view, clampView({ k, ux: 0.5 - k * cx, uy: 0.5 - k * cy }));
       draw();
       if (t < 1) anim = requestAnimationFrame(step);
+      else onDone?.();
     };
     anim = requestAnimationFrame(step);
   }
@@ -366,9 +367,77 @@ export async function renderPlacesMap(rows, buildTable) {
 
   new ResizeObserver(() => draw()).observe(stage);
 
+  // ---- List beside the map ----
+  // Hovering (or focusing) a box highlights its pin, wiggles it and zooms the
+  // map to it. A short delay keeps a quick pass over the list from jumping around.
+  const HOVER_K = 9;
+  let hoverTimer = 0;
+  let highlighted = null;
+
+  function zoomToPin(p) {
+    const k = Math.max(view.k, HOVER_K);
+    const centred = (kk) => ({ k: kk, ux: 0.5 - kk * p.fx, uy: 0.5 - kk * p.fy });
+    setView(centred(k), true, {
+      duration: 260,
+      // Still inside a group at this zoom? Go all the way in.
+      onDone: () => { if (p.cluster) setView(centred(MAX_K), true, { duration: 220 }); },
+    });
+  }
+
+  function highlight(p, on) {
+    if (!on) {
+      if (highlighted === p) { p.el.classList.remove('highlight'); p.card.classList.remove('active'); highlighted = null; }
+      return;
+    }
+    if (highlighted && highlighted !== p) highlight(highlighted, false);
+    highlighted = p;
+    p.card.classList.add('active');
+    p.el.classList.remove('highlight');
+    void p.el.offsetWidth; // restart the wiggle
+    p.el.classList.add('highlight');
+  }
+
+  const collator = new Intl.Collator('is');
+  const list = el('ol', { className: 'places-list' });
+  for (const p of [...pins].sort((a, b) => collator.compare(a.row.place, b.row.place))) {
+    const card = el('li', {},
+      el('button', { className: 'place-card' },
+        el('h3', {}, p.row.place),
+        el('p', {}, p.row.reason || '—')));
+    p.card = card.firstChild;
+    const enter = () => {
+      highlight(p, true);
+      clearTimeout(hoverTimer);
+      hoverTimer = setTimeout(() => zoomToPin(p), 90);
+    };
+    const leave = () => { clearTimeout(hoverTimer); highlight(p, false); };
+    p.card.addEventListener('mouseenter', enter);
+    p.card.addEventListener('focus', enter);
+    p.card.addEventListener('mouseleave', leave);
+    p.card.addEventListener('blur', leave);
+    p.card.addEventListener('click', () => {
+      clearTimeout(hoverTimer);
+      const k = MAX_K;
+      setView({ k, ux: 0.5 - k * p.fx, uy: 0.5 - k * p.fy }, true, {
+        duration: 260,
+        onDone: () => { if (open?.p !== p) openFlag(p.el, p); },
+      });
+    });
+    list.append(card);
+  }
+  // Pins point back at their box.
+  for (const p of pins) {
+    p.el.addEventListener('mouseenter', () => p.card.classList.add('active'));
+    p.el.addEventListener('mouseleave', () => { if (highlighted !== p) p.card.classList.remove('active'); });
+  }
+
+  const listWrap = el('div', { className: 'places-list-wrap' },
+    el('div', { className: 'places-list-head' }, `${pins.length} places`),
+    list);
+
   // ---- Around the map ----
   const caption = el('p', { className: 'caption' },
-    `${onMap.length} places on the map. Click a numbered group to zoom in on it, then a pin to read why. ` +
+    `${onMap.length} places on the map. Hover a place in the list to fly to it, or click a numbered group to zoom in. ` +
     'Drag to move around; pinch, ctrl + scroll or double-click to zoom.');
 
   const legend = el('div', { className: 'legend' },
@@ -377,7 +446,8 @@ export async function renderPlacesMap(rows, buildTable) {
     el('span', {}, el('span', { className: 'swatch key-pin' }), 'Place'),
     el('span', {}, el('span', { className: 'swatch key-cluster' }, '3'), 'Group of places'));
 
-  const root = el('div', { className: 'viz' }, caption, legend, stage);
+  const layout = el('div', { className: 'places-layout' }, stage, listWrap);
+  const root = el('div', { className: 'viz' }, caption, legend, layout);
 
   if (offMap.length) root.append(offMapList(offMap));
 

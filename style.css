@@ -212,7 +212,7 @@ a:hover { text-decoration-color: var(--ink); }
 main {
   flex: 1;
   width: 100%;
-  max-width: 1080px;
+  max-width: 1240px;
   padding: 3rem 3rem 6rem;
 }
 
@@ -570,6 +570,84 @@ td.empty { color: var(--ink-3); }
 }
 @media (prefers-reduced-motion: reduce) {
   .pin:hover { animation: none; }
+}
+
+/* Map + list side by side; the list scrolls within the map's height. */
+.places-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(16rem, 1fr);
+  gap: 1.5rem;
+  margin: 1rem 0 2rem;
+}
+.places-layout .places-stage { margin: 0; }
+.places-list-wrap { position: relative; min-height: 0; }
+.places-list-head {
+  position: absolute;
+  inset: 0 0 auto 0;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--line-strong);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.places-list {
+  position: absolute;
+  inset: 2.1rem 0 0 0;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  scrollbar-width: thin;
+}
+.place-card {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.8rem;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-left: 2px solid transparent;
+  background: none;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.place-card h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+.place-card p {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--ink-3);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.place-card:hover, .place-card:focus-visible, .place-card.active {
+  outline: none;
+  background: color-mix(in oklab, var(--accent-1) 7%, var(--bg));
+  border-left-color: var(--accent-1);
+}
+.place-card.active p { color: var(--ink-2); }
+
+.pin.highlight { z-index: 4; animation: jiggle 0.5s ease-in-out; }
+.pin.highlight .pin-head {
+  background: var(--accent-1);
+  transform: scale(1.4);
+  box-shadow: 0 0 0 1.5px var(--bg), 0 0 0 4px color-mix(in oklab, var(--accent-1) 35%, transparent);
+}
+.pin-head { transition: transform 0.15s ease, background 0.15s ease; }
+
+@media (max-width: 1000px) {
+  .places-layout { grid-template-columns: 1fr; }
+  .places-list-wrap { height: 60vh; }
 }
 
 /* Places that missed the map */
