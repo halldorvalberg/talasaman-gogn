@@ -6,8 +6,8 @@ import { playButton } from './player-controls.js';
 
 /** What the button shows while stopped and while playing. */
 const PLAY_ALL = (stopped) => (stopped
-  ? { icon: '▶', text: 'Play all', label: 'Play all recordings, one after another' }
-  : { icon: '■', text: 'Stop', label: 'Stop playing all recordings' });
+  ? { icon: 'play', text: 'Play all', label: 'Play all recordings, one after another' }
+  : { icon: 'stop', text: 'Stop', label: 'Stop playing all recordings' });
 
 /** Play a recording from its start. */
 function playFromStart(audio) {

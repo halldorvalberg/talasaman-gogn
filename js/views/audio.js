@@ -3,6 +3,7 @@
 // search the summaries. An optional "radio sound" chain cleans up the voices.
 // The Listening view link opens #/listen with the chosen topic and location.
 
+import { icon } from '../components/icons.js';
 import { el } from '../lib/dom.js';
 import { fetchRecordings } from '../lib/recordings.js';
 import { buildListenHash } from '../lib/listen-address.js';
@@ -79,7 +80,7 @@ async function fillClips(container, onFilter) {
  * the recordings the topic and location filters leave.
  */
 function listeningViewLink() {
-  const link = el('a', { className: 'radio-play-all', href: buildListenHash({}) }, '⤢ Listening view');
+  const link = el('a', { className: 'radio-play-all', href: buildListenHash({}) }, icon('expand'), 'Listening view');
   link.title = 'Full screen: the talasaman.is image moves with the voice while the recordings play in turn';
   const follow = (filters) => {
     link.href = buildListenHash({ topic: queryOf(filters, 'topic') || null, location: queryOf(filters, 'location') || null });

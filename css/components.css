@@ -184,3 +184,9 @@ td.empty { color: var(--ink-3); }
   border-radius: 2px;
   background: var(--highlight);
 }
+
+/* ---- Icons (icons.js) ----------------------------------------------------- */
+
+.icon { width: 1em; height: 1em; fill: currentColor; flex: none; vertical-align: -0.125em; }
+.stage-button .icon { width: 1.125rem; height: 1.125rem; }
+.stage-play .icon { width: 1.5rem; height: 1.5rem; }

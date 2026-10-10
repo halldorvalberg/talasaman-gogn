@@ -77,10 +77,28 @@ function apply() {
   for (const { id } of STAGES) engine.chain.setStage(id, settings.on && settings.stages[id]);
 }
 
+/**
+ * The AudioContext, created on first use. Phones (iOS Safari above all) only
+ * let a context make sound if it is created or resumed during a tap, click
+ * or key press itself — not after an await — so this runs synchronously in
+ * the play handler, and any later gesture wakes it again (see below).
+ */
+let context = null;
+function audioContext() {
+  context ??= new AudioContext();
+  if (context.state !== 'running') context.resume().catch(() => {});
+  return context;
+}
+
+// A gesture anywhere wakes a context the browser left suspended.
+for (const type of ['pointerup', 'click', 'keydown']) { // a touch counts when the finger lifts
+  document.addEventListener(type, () => { if (context && context.state !== 'running') context.resume().catch(() => {}); }, true);
+}
+
 /** Start the audio engine once; later calls wait for the same start-up. */
 function startEngine() {
+  const ctx = audioContext(); // synchronously, while the gesture still counts
   starting ??= (async () => {
-    const ctx = new AudioContext();
     await ctx.audioWorklet.addModule(new URL('./denoise-worklet.js', import.meta.url));
     await ctx.audioWorklet.addModule(new URL('./expander-worklet.js', import.meta.url));
     const chain = createRadioChain(ctx, currentPreset());
@@ -90,6 +108,7 @@ function startEngine() {
     apply();
     listeners.forEach((fn) => fn(engine));
   })();
+  starting.catch((err) => console.error('Radio sound could not start:', err));
   return starting;
 }
 
@@ -100,7 +119,7 @@ export function registerPlayer(audio) {
   audio.addEventListener('play', async () => {
     await startEngine();
     connect(audio);
-    engine.ctx.resume();
+    audioContext();
   });
 }
 

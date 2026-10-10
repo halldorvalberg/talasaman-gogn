@@ -5,11 +5,12 @@
 import { el } from '../lib/dom.js';
 import { formatClock } from '../lib/format.js';
 import { followPlayback } from '../lib/playback.js';
+import { icon } from './icons.js';
 
-/** What a play button shows: an icon, a word (none for an icon-only button) and an accessible name. */
+/** What a play button shows: an icon (a name from icons.js), a word (none for an icon-only button) and an accessible name. */
 const PLAY_PAUSE = (paused) => (paused
-  ? { icon: '▶', text: 'Play', label: 'Play' }
-  : { icon: '❚❚', text: 'Pause', label: 'Pause' });
+  ? { icon: 'play', text: 'Play', label: 'Play' }
+  : { icon: 'pause', text: 'Pause', label: 'Pause' });
 
 /** The same, with the icon alone (the name is still read out). */
 export const PLAY_PAUSE_ICON = (paused) => ({ ...PLAY_PAUSE(paused), text: '' });
@@ -26,10 +27,10 @@ export const audioPlayback = (audio) => ({
 });
 
 /** Fill a button with what `look` gives for the current state. */
-function showLook(button, { icon, text, label }) {
-  const iconSpan = el('span', { className: 'play-icon', ariaHidden: 'true' }, icon);
+function showLook(button, { icon: name, text, label }) {
+  const iconSpan = el('span', { className: 'play-icon', ariaHidden: 'true' }, icon(name));
   if (text) button.replaceChildren(iconSpan, ' ', text); // the space only shows outside flex layouts
-  else button.replaceChildren(icon);
+  else button.replaceChildren(icon(name));
   button.ariaLabel = label;
   if (!text) button.title = label;
 }

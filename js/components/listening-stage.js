@@ -3,8 +3,8 @@
 // (aggressive or calm), and a player underneath goes through the recordings
 // in turn, starting over after the last unless told to stop there. Esc or
 // the close button leaves it; it fits any screen in either orientation (see
-// css/components/listening-stage.css). Browsers block sound until the page
-// has been clicked, so if playing is refused a big Start button appears.
+// css/components/listening-stage.css). It starts playing at once; when the
+// browser refuses sound before a click, it plays muted until the first tap.
 
 import { el } from '../lib/dom.js';
 import { recordingTitle } from '../lib/format.js';
@@ -12,12 +12,13 @@ import { recordingAudio } from './audio-player.js';
 import { playButton, audioPlayback, timeReadout, PLAY_PAUSE_ICON } from './player-controls.js';
 import { createProgressLine } from './progress-line.js';
 import { heroChorus } from './hero-visualisers.js';
+import { icon } from './icons.js';
 
 const RESTART_WITHIN = 3; // s: "previous" restarts the recording if further in than this
 
-/** A round control button with an icon and an accessible name. */
-function stageButton(icon, label, onClick, className = '') {
-  const button = el('button', { className: `stage-button ${className}`.trim(), ariaLabel: label, title: label }, icon);
+/** A round control button with an icon (a name from icons.js) and an accessible name. */
+function stageButton(iconName, label, onClick, className = '') {
+  const button = el('button', { className: `stage-button ${className}`.trim(), ariaLabel: label, title: label }, icon(iconName));
   button.addEventListener('click', onClick);
   return button;
 }
@@ -82,36 +83,48 @@ function createPlaylist(rows, { onTrackChange, onBlocked }) {
   return { audio, count, title, play, seek, next, previous, setLoop: (value) => { loop = value; } };
 }
 
-/** The "▶ Start" panel shown over the stage while the browser waits for a click. */
-function startPanel(onStart) {
-  const button = el('button', { className: 'stage-start-button' },
-    el('span', { ariaHidden: 'true' }, '▶'), ' Start');
-  button.addEventListener('click', onStart);
-  const panel = el('div', { className: 'stage-start', hidden: true },
-    el('div', { className: 'stage-start-card' },
-      button,
-      el('p', { className: 'stage-start-hint' }, 'Your browser waits for a click before it plays sound.')));
-  return {
-    element: panel,
-    show: () => { panel.hidden = false; button.focus(); },
-    hide: () => { panel.hidden = true; },
-  };
+/**
+ * Browsers only allow sound after a tap, click or key press, so a link opened
+ * directly can't start with sound. It then tries to play muted (allowed by
+ * most browsers), so the view runs straight away; the first gesture anywhere
+ * starts the sound. A small hint says so meanwhile.
+ * @returns {{ element: HTMLElement, onBlocked: () => void, stop: () => void }}
+ */
+function soundUnlock(audio) {
+  const hint = el('p', { className: 'stage-sound-hint', role: 'status', hidden: true });
+  // A touch only counts as a gesture when the finger lifts (pointerup / click), not on touch-down.
+  const GESTURES = ['pointerup', 'click', 'keydown'];
+  const stop = () => GESTURES.forEach((type) => document.removeEventListener(type, unmute, true));
+  function unmute() {
+    stop();
+    audio.muted = false;
+    hint.hidden = true;
+    if (audio.paused) audio.play().catch(() => {});
+  }
+  function onBlocked() {
+    audio.muted = true;
+    hint.textContent = 'Tap anywhere for sound';
+    audio.play().catch(() => { hint.textContent = 'Tap anywhere to start'; }); // some browsers refuse even muted
+    hint.hidden = false;
+    GESTURES.forEach((type) => document.addEventListener(type, unmute, true));
+  }
+  return { element: hint, onBlocked, stop };
 }
 
-/** The stage's markup: close button, the moving image, the player and the Start panel. */
-function stageElement({ playlist, playPause, line, time, art, start, close }) {
+/** The stage's markup: close button, the moving image, the player and the sound hint. */
+function stageElement({ playlist, playPause, line, time, art, hint, close }) {
   return el('div', { className: 'stage', role: 'dialog', ariaModal: 'true', ariaLabel: 'Listening view' },
-    stageButton('✕', 'Close the listening view', close, 'stage-close'),
+    stageButton('close', 'Close the listening view', close, 'stage-close'),
     art,
     el('div', { className: 'stage-player' },
       el('p', { className: 'stage-now', ariaLive: 'polite' }, playlist.count, playlist.title),
       el('div', { className: 'stage-controls' },
-        stageButton('⏮', 'Previous recording', playlist.previous),
+        stageButton('previous', 'Previous recording', playlist.previous),
         playPause,
-        stageButton('⏭', 'Next recording', playlist.next),
+        stageButton('next', 'Next recording', playlist.next),
         el('div', { className: 'stage-line' }, line.element),
         time.element)),
-    start.element,
+    hint,
     playlist.audio);
 }
 
@@ -135,20 +148,16 @@ const chorusArt = (mood) => heroChorus({ mood });
  */
 export function mountListeningStage(container, { rows, start = 0, startAt = null, mood = 'aggressive', loop = true, onClose, onTrackChange = () => {} }) {
   document.querySelectorAll('audio').forEach((a) => a.pause()); // one thing playing at a time
-  const startButton = startPanel(() => playlist.audio.play());
-  const playlist = createPlaylist(rows, { onTrackChange, onBlocked: startButton.show });
+  let sound = null; // set just below; the playlist only calls onBlocked once playing starts
+  const playlist = createPlaylist(rows, { onTrackChange, onBlocked: () => sound.onBlocked() });
   const { audio } = playlist;
+  sound = soundUnlock(audio);
   const line = createProgressLine({ label: 'Position in the recording' });
   line.connect(audio);
   const time = timeReadout(audio, 'stage-time');
   const playPause = playButton(audioPlayback(audio), { className: 'stage-button stage-play', look: PLAY_PAUSE_ICON });
   const art = el('div', { className: 'stage-art' }, chorusArt(mood));
-  const stage = stageElement({ playlist, playPause, line, time, art, start: startButton, close: onClose });
-  audio.addEventListener('play', () => {
-    const hadFocus = startButton.element.contains(document.activeElement);
-    startButton.hide();
-    if (hadFocus) playPause.focus(); // focus stays in the stage, on the control that now matters
-  });
+  const stage = stageElement({ playlist, playPause, line, time, art, hint: sound.element, close: onClose });
 
   /** Esc closes; Tab goes round the stage's own controls only (it is modal). */
   function onKey(event) {
@@ -157,6 +166,7 @@ export function mountListeningStage(container, { rows, start = 0, startAt = null
   }
 
   function destroy() {
+    sound.stop();
     audio.pause();
     time.stop();
     line.disconnect();

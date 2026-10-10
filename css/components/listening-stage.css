@@ -77,45 +77,25 @@ body.stage-open .topbar { visibility: hidden; }
   z-index: 1;
 }
 
-/* ---- Start panel ---- */
-/* Shown when the browser refuses to play before a click (a link opened directly). */
-.stage-start {
+/* ---- Sound hint ---- */
+/* Shown while a directly opened link plays muted, until the first tap. */
+.stage-sound-hint {
   position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-  pointer-events: none; /* only the card takes clicks; the rest of the stage still works */
-}
-.stage-start[hidden] { display: none; }
-.stage-start-card {
-  pointer-events: auto;
-  display: grid;
-  justify-items: center;
-  gap: 1rem;
-  max-width: 22rem;
-  padding: 1.5rem 1.75rem;
+  top: max(1.25rem, env(safe-area-inset-top));
+  left: 50%;
+  z-index: 1;
+  translate: -50% 0;
+  margin: 0;
+  padding: 0.5rem 1rem;
   border: 1px solid var(--line-strong);
-  background: var(--bg);
-  text-align: center;
-}
-.stage-start-button {
-  min-width: 10rem;
-  min-height: 4.5rem;
-  padding: 0.75rem 2.5rem;
-  border: 2px solid var(--line-strong);
   border-radius: 999px;
-  background: var(--ink);
-  font: inherit;
-  font-size: 1.75rem;
-  font-weight: 500;
-  color: var(--bg);
-  cursor: pointer;
+  background: var(--bg);
+  font-size: 0.9375rem;
+  white-space: nowrap;
+  color: var(--ink);
+  pointer-events: none;
 }
-.stage-start-button:hover { background: var(--bg); color: var(--ink); }
-.stage-start-button:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
-.stage-start-hint { margin: 0; color: var(--ink-2); }
+.stage-sound-hint[hidden] { display: none; }
 
 /* ---- Loading and error message ---- */
 .stage-message {

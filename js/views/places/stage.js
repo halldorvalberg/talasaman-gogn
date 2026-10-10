@@ -2,6 +2,7 @@
 // and the flag. Owns the current view; the list beside it drives it through
 // the returned API (highlight, showNearby, openPlace).
 
+import { icon } from '../../components/icons.js';
 import { el, replayClass } from '../../lib/dom.js';
 import { viewBoxAttr } from '../../lib/geo.js';
 import { tween, easeOut } from '../../lib/motion.js';
@@ -36,7 +37,7 @@ function mapButton(label, text, action, className = '') {
 function zoomControls({ zoomIn, zoomOut, reset }) {
   const inButton = mapButton('Zoom in', '+', zoomIn);
   const outButton = mapButton('Zoom out', '−', zoomOut);
-  const resetButton = mapButton('Show all of Iceland', '⤢', reset);
+  const resetButton = mapButton('Show all of Iceland', icon('expand'), reset);
   return {
     element: el('div', { className: 'map-controls' }, inButton, outButton, resetButton),
     update(view) {
