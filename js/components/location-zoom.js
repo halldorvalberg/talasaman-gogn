@@ -11,7 +11,7 @@ import { el, replayClass } from '../lib/dom.js';
 import { project, polygonsOf, viewBoxAttr } from '../lib/geo.js';
 import { clamp } from '../lib/math.js';
 import { tween, easeInOut } from '../lib/motion.js';
-import { HOME, centreOn, visibleFrame, flightPath } from '../lib/map-view.js';
+import { HOME, centreOn, visibleFrame, flightPath, isZoomedIn } from '../lib/map-view.js';
 import { layoutPins, placeOnScreen } from '../lib/map-pins.js';
 import { drawBaseMap, featuresOf } from './basemap.js';
 import { pinMarker } from './map-pin.js';
@@ -72,9 +72,11 @@ function mapLabel() {
  * @param {object} [options]
  * @param {number} [options.zoom] how far in to fly (1 = all of Iceland, up to 24)
  * @param {number} [options.duration] ms per flight
+ * @param {boolean} [options.viaAll] between two locations, fly all the way out
+ *   to the whole country first (instead of only as far as both fit)
  * @returns the lens's `element` and showLocation / showAll (see below)
  */
-export function createLocationZoom(base, { zoom = LANDING_ZOOM, duration = FLIGHT_TIME } = {}) {
+export function createLocationZoom(base, { zoom = LANDING_ZOOM, duration = FLIGHT_TIME, viaAll = false } = {}) {
   const frame = lensFrame(base);
   const svg = drawBaseMap(base, frame);
   const pin = pinMarker();
@@ -117,6 +119,12 @@ export function createLocationZoom(base, { zoom = LANDING_ZOOM, duration = FLIGH
     async showLocation(location) {
       label.hide();
       const landing = layoutPins([{ place: location.name, lat: location.lat, lng: location.lng }], frame)[0];
+      if (viaAll && isZoomedIn(view)) {
+        pin.hidden = true;
+        spot = landing; // marks a newer pick, so an overtaken call stops below
+        await flyTo(HOME);
+        if (spot !== landing) return;
+      }
       spot = landing;
       pin.hidden = false;
       draw();

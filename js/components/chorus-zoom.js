@@ -55,12 +55,15 @@ function addBubbles(figure, hero, isLive) {
 
 /**
  * @param {object} base the parsed data/iceland.geojson
- * @param {object} [options] passed to createLocationZoom (zoom, duration)
+ * @param {object} [options] passed to createLocationZoom (zoom, duration, viaAll), plus
+ * @param {'line'|'blue'} [options.tone] 'line': black lines on white (default);
+ *   'blue': the map in the bubbles' blue with white lines and names, all blue and white
  * @returns the figure's `element` and the lens's showLocation / showAll
  */
-export function chorusZoom(base, options) {
-  const zoom = createLocationZoom(base, options);
-  const figure = el('div', { className: 'chorus-zoom' }, zoom.element);
+export function chorusZoom(base, { tone = 'line', ...options } = {}) {
+  // Between venues this lens flies all the way out to Iceland and back in.
+  const zoom = createLocationZoom(base, { viaAll: true, ...options });
+  const figure = el('div', { className: `chorus-zoom${tone === 'blue' ? ' lens-blue' : ''}` }, zoom.element);
   const isLive = liveCheck(figure);
   loadHero()
     .then((hero) => addBubbles(figure, hero, isLive))

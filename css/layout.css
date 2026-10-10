@@ -50,13 +50,21 @@
 #pages a.sub-2 { padding-left: 2.2rem; }
 #pages a.sub-2.active { padding-left: 2.8rem; }
 
-.theme-toggle {
+/* The style (Minimal | Samtal) and theme (☀ | ☾) toggles, stacked at the
+   foot of the sidebar: segmented controls of square outlined buttons. */
+.toggles {
   margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+.choice-toggle {
   display: inline-flex;
   align-self: flex-start;
   border: 1px solid var(--line-strong);
 }
-.theme-toggle button {
+.choice-toggle button {
   display: grid;
   place-items: center;
   width: 44px;
@@ -67,10 +75,11 @@
   color: var(--ink-2);
   cursor: pointer;
 }
-.theme-toggle button + button { border-left: 1px solid var(--line-strong); }
-.theme-toggle button:hover { color: var(--ink); }
-.theme-toggle button[aria-pressed="true"] { color: var(--bg); background: var(--ink); }
+.choice-toggle button + button { border-left: 1px solid var(--line-strong); }
+.choice-toggle button:hover { color: var(--ink); }
+.choice-toggle button[aria-pressed="true"] { color: var(--bg); background: var(--ink); }
 .theme-toggle svg { width: 16px; height: 16px; }
+.style-toggle button { width: auto; padding: 0 0.75rem; font: inherit; font-size: 0.875rem; }
 
 .sidebar-foot {
   margin-top: -1.5rem;

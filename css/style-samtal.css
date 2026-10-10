@@ -1,0 +1,577 @@
+/* The Samtal style (data-style="samtal" on <html>, set before first paint
+   from localStorage 'style'; the Minimal | Samtal toggle in the sidebar).
+   It copies talasaman.is/samantektir: a top bar instead of the sidebar, a
+   centred column, an eyebrow + big serif title + serif lede, rounded cards on
+   surface, blá buttons and pill tabs, Inter for text and Fraunces (standing
+   in for their "Roca") for headings and card text.
+
+   An override layer only: every rule is scoped under data-style="samtal", so
+   the Minimal style is untouched. Element rules sit under :where() (no added
+   specificity, so page rules such as `.offmap-section h2` still win);
+   component rules are scoped normally so they beat the Minimal rule they
+   restyle. Colours come from the --s-* and themed tokens in tokens.css. */
+
+:root[data-style="samtal"] {
+  --s-bar: 4rem;     /* top bar height (closed) */
+  --s-col: 56rem;    /* content column, their max-w-4xl */
+  --s-wide: 72rem;   /* column for map pages, their max-w-6xl */
+  font-family: var(--font-sans-samtal);
+  line-height: 1.5;
+}
+
+/* ---- Type --------------------------------------------------------------- */
+
+:where(:root[data-style="samtal"]) {
+  & h1 {
+    margin: 0.5rem 0 1.25rem;
+    font-family: var(--font-display);
+    font-size: 3.75rem;
+    font-weight: 600;
+    font-variation-settings: "opsz" 144;
+    letter-spacing: -0.015em;
+    line-height: 1.05;
+  }
+  & h2 {
+    margin: 3.5rem 0 1rem;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    font-variation-settings: "opsz" 48;
+    letter-spacing: normal;
+    line-height: 1.3;
+    text-transform: none;
+    color: var(--ink);
+  }
+  & :focus-visible { outline-color: var(--s-focus); }
+}
+
+:root[data-style="samtal"] {
+  & .lede {
+    max-width: 42rem;
+    margin: 0 0 2.5rem;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-variation-settings: "opsz" 36;
+    line-height: 1.4;
+    color: var(--ink-2);
+  }
+  & :is(.lede, .caption, .subpage-link, .demo-note) a {
+    color: var(--s-accent);
+    text-decoration-color: currentColor;
+  }
+  & :is(.lede, .caption, .subpage-link, .demo-note) a:hover { text-decoration-thickness: 2px; }
+}
+
+/* ---- Top bar: the sidebar laid out as a row ------------------------------ */
+
+:root[data-style="samtal"] {
+  & #sidebar {
+    inset: 0 0 auto 0;
+    width: auto;
+    height: var(--s-bar);
+    padding: 0.625rem 2rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: 1.5rem 1.25rem auto;   /* brand, data note, room for subpages */
+    grid-template-areas: "brand nav tools" "foot nav tools" ". nav .";
+    align-items: center;
+    gap: 0 1.25rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+    transition: none;
+  }
+  /* The bar is always there; the sidebar's open/closed state only drives the
+     narrow-screen menu below. The listening view still hides it. */
+  & body.sidebar-closed #sidebar { transform: none; visibility: visible; }
+  & body.stage-open #sidebar { visibility: hidden; }
+
+  & .brand {
+    grid-area: brand;
+    align-self: end;
+    gap: 0.6rem;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    font-variation-settings: "opsz" 48;
+    letter-spacing: normal;
+    line-height: 1.2;
+  }
+  & .brand-mark { width: 24px; height: 24px; }
+
+  & .sidebar-foot {
+    grid-area: foot;
+    align-self: start;
+    margin: 0;
+    line-height: 1.4;
+  }
+  & .sidebar-foot br { display: none; }
+  & .sidebar-foot a:last-of-type { margin-left: 0.5rem; }
+
+  & #pages {
+    grid-area: nav;
+    align-self: start;
+    justify-self: end;
+    flex-flow: row wrap;
+    justify-content: flex-end;
+    gap: 0.125rem;
+  }
+  & #pages a,
+  & #pages a:first-child,
+  & #pages a.active,
+  & #pages a.sub,
+  & #pages a.sub.active {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 0.6rem;
+    border: 0;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 1rem;
+    white-space: nowrap;
+    color: var(--ink-2);
+    transition: background 0.15s, color 0.15s;
+  }
+  & #pages a:hover { background: var(--s-hover); color: var(--ink); }
+  & #pages a.active { background: var(--s-hover); color: var(--ink); }
+  & #pages a.sub::before { content: "› " / ""; color: var(--ink-3); white-space: pre; }
+  /* In the bar, subpages show only around the page you're on, on a second
+     row under the links: Summaries or any of its subpages brings out the
+     whole run of subpage links that follows Summaries. A run ends at the
+     next top-level link (a:not(.sub)). Every subpage is also linked from its
+     parent page and listed in full in the narrow menu. */
+  & #pages::after { content: ""; order: 1; flex-basis: 100%; } /* the row break */
+  & #pages a.sub { display: none; order: 2; font-size: 0.9375rem; }
+  & #pages a.active ~ a.sub:not(#pages a.active ~ a:not(.sub) ~ a.sub),
+  & #pages a.sub:has(~ a.sub.active):not(:has(~ a:not(.sub) ~ a.sub.active)) { display: inline-flex; }
+
+  & .toggles {
+    grid-area: tools;
+    flex-direction: row;
+    align-items: center;
+    margin: 0;
+    gap: 0.5rem;
+  }
+}
+
+/* The bar grows by a row while subpages show (wide screens only). */
+@media (min-width: 1261px) {
+  :root[data-style="samtal"]:has(#pages :is(a.active + a.sub, a.sub.active)) { --s-bar: 6.875rem; } /* a page with subpages, or a subpage */
+}
+
+/* ---- Segmented toggles: pills ------------------------------------------- */
+
+:root[data-style="samtal"] {
+  & .choice-toggle {
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+  }
+  & .choice-toggle button {
+    width: 38px;
+    height: 34px;
+    border-radius: 999px;
+    font-weight: 600;
+    color: var(--ink-2);
+    transition: background 0.15s, color 0.15s;
+  }
+  & .choice-toggle button + button { border-left: 0; }
+  & .choice-toggle button:hover { background: var(--s-accent-tint); color: var(--ink-2); }
+  & .choice-toggle button[aria-pressed="true"] { background: var(--s-accent); color: var(--s-on-accent); }
+  & .style-toggle button { width: auto; padding: 0 0.85rem; font-size: 0.875rem; }
+}
+
+/* ---- Page frame: eyebrow and centred column ----------------------------- */
+
+:root[data-style="samtal"] {
+  & #shell,
+  & .sidebar-closed #shell { margin-left: 0; transition: none; }
+
+  /* The old top bar becomes the eyebrow: "SAMTAL · SUMMARIES / AUDIO". */
+  & .topbar {
+    width: 100%;
+    max-width: var(--s-col);
+    margin: 0 auto;
+    padding: calc(var(--s-bar) + 3.5rem) 2rem 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.025em;
+  }
+  & #crumb::before { content: "Samtal · "; }
+  & #toggle-sidebar { display: none; }
+
+  & main {
+    max-width: var(--s-col);
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+  /* Map pages get a wider column so the maps stay big. */
+  & #shell:has(.places-layout, .maps, .tables-stage) :is(.topbar, main) { max-width: var(--s-wide); }
+}
+
+/* ---- Narrow screens: the bar folds its links into a menu ---------------- */
+/* Keep the width in step with narrowFor.samtal in js/components/sidebar.js. */
+
+@media (max-width: 1260px) {
+  :root[data-style="samtal"] {
+    & #sidebar {
+      height: auto;
+      min-height: var(--s-bar);
+      max-height: 100dvh;
+      overflow-y: auto;
+      padding: 0 1.25rem;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: none;
+      grid-template-areas: "brand" "nav" "tools" "foot";
+      align-items: start;
+    }
+    & body:not(.sidebar-closed):has(#pages > a) #sidebar { box-shadow: 0 0 0 100vmax var(--scrim); }
+    & .brand { align-self: center; height: calc(var(--s-bar) - 1px); padding-right: 3.5rem; } /* + the 1px border = the bar */
+    /* Closed, or not set up yet: until main.js has built the links (and
+       closed the menu), keep it shut so the first frame doesn't flash it. */
+    & body.sidebar-closed :is(#pages, .toggles, .sidebar-foot),
+    & body:not(:has(#pages > a)) :is(#pages, .toggles, .sidebar-foot) { display: none; }
+
+    & #pages::after { content: none; }
+    & #pages {
+      justify-self: stretch;
+      flex-direction: column;
+      padding: 0.5rem 0 0.75rem;
+      border-top: 1px solid var(--line);
+    }
+    & #pages a.sub { display: inline-flex; order: 0; font-size: 1rem; }
+    & #pages a.sub.sub-1 { padding-left: 1.5rem; }
+    & #pages a.sub.sub-2 { padding-left: 2.75rem; }
+    & .toggles { flex-wrap: wrap; align-self: start; padding: 0.25rem 0 0.75rem; }
+    & .sidebar-foot { align-self: start; padding-bottom: 1rem; }
+
+    & #toggle-sidebar {
+      position: fixed;
+      top: calc((var(--s-bar) - 44px) / 2);
+      right: 1rem;
+      z-index: 11;
+      display: flex;
+      width: 44px;
+      height: 44px;
+      margin: 0;
+      padding: 14px 11px;
+      border-radius: 0.75rem;
+    }
+    & #toggle-sidebar:hover { background: var(--s-hover); }
+    & #toggle-sidebar span { height: 2px; border-radius: 1px; background: var(--ink); }
+  }
+}
+
+@media (max-width: 800px) {
+  :root[data-style="samtal"] {
+    & .topbar { padding: calc(var(--s-bar) + 2rem) 1.25rem 0; }
+    & main { padding: 0 1.25rem 5rem; }
+    & h1 { font-size: 3rem; }
+    & .lede { font-size: 1.25rem; }
+  }
+}
+@media (max-width: 480px) {
+  :root[data-style="samtal"] h1 { font-size: 2.5rem; }
+}
+
+/* ---- Buttons and links -------------------------------------------------- */
+
+:root[data-style="samtal"] {
+  & .actions { flex-wrap: wrap; gap: 0.75rem 1rem; margin-bottom: 2.5rem; }
+
+  /* Primary: rounded-xl blá with cream text. */
+  & :is(button.endpoint, .radio-play-all, .lb-button) {
+    min-height: 44px;
+    padding: 0.55rem 1.125rem;
+    border: 0;
+    border-radius: 0.75rem;
+    background: var(--s-accent);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--s-on-accent);
+    transition: background 0.15s;
+  }
+  & :is(button.endpoint, .radio-play-all, .lb-button):hover { background: var(--s-accent-hover); color: var(--s-on-accent); }
+  & :is(.radio-play-all, .lb-button):disabled { opacity: 0.6; color: var(--s-on-accent); }
+  & button.endpoint .method,
+  & button.endpoint:hover .method { color: inherit; font-weight: 500; }
+
+  /* Secondary: a pill like their "▶ Hlusta". */
+  & .demo-button {
+    min-height: 40px;
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--s-accent-edge);
+    border-radius: 999px;
+    background: var(--bg);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--s-accent);
+    transition: background 0.15s, border-color 0.15s;
+  }
+  & .demo-button:hover { border-color: var(--s-focus); background: var(--s-accent-tint); color: var(--s-accent); }
+
+  /* JSON / CSV and other plain links: underlined blá. */
+  & .raw {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: normal;
+    color: var(--s-accent);
+    text-decoration: underline;
+  }
+  & .raw:hover { color: var(--s-accent); text-decoration-thickness: 2px; }
+  & .subpage-link { margin: -1rem 0 2rem; }
+}
+
+/* ---- Fold-outs, tables, fields, legend, tooltip ------------------------- */
+
+:root[data-style="samtal"] {
+  & details > summary { font-size: 0.875rem; font-weight: 600; }
+
+  & th { letter-spacing: 0.05em; border-bottom-color: var(--line); }
+  & .filter {
+    min-height: 40px;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 0.5rem;
+    background: var(--bg);
+    font-size: 0.875rem;
+  }
+  & :is(.filter-field, .demo-field, .lb-field > label, .lb-radios > legend, .lb-output > label) {
+    letter-spacing: 0.025em;
+    font-weight: 500;
+  }
+  & .swatch { border-radius: 3px; }
+  & .tooltip {
+    padding: 0.5rem 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: 0.75rem;
+    background: var(--s-surface);
+  }
+  & .lb-check, & .lb-radio input, & .radio-slider { accent-color: var(--s-control); }
+  & :is(.lb-part, .lb-part:last-child) { border-color: var(--line); }
+}
+
+/* ---- Overview: tiles and the dataset index as cards ---------------------- */
+
+:root[data-style="samtal"] {
+  & .tiles {
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: 0.75rem;
+    margin-top: 3rem;
+    border: 0;
+  }
+  & .tile {
+    padding: 1rem 1.25rem;
+    border: 0;
+    border-radius: 1rem;
+    background: var(--s-surface);
+  }
+  & .tile-value {
+    font-family: var(--font-display);
+    font-size: 2.25rem;
+    font-weight: 600;
+    font-variation-settings: "opsz" 72;
+    line-height: 1.2;
+  }
+
+  & .index {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    gap: 0.75rem;
+  }
+  & .index li,
+  & .index li:first-child {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1rem 1.25rem 1.125rem;
+    border: 0;
+    border-radius: 1rem;
+    background: var(--s-surface);
+    transition: background 0.15s;
+  }
+  & .index li:hover { background: var(--card-hover); }
+  & .index li:has(a:focus-visible) { outline: 2px solid var(--s-focus); outline-offset: 2px; }
+  & .index a,
+  & .index li.sub a,
+  & .index li.sub-2 a {
+    padding: 0;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    font-variation-settings: "opsz" 48;
+    line-height: 1.3;
+    outline: none; /* the whole card shows focus instead */
+  }
+  & .index a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; } /* the whole card is the link */
+  & .index a:hover { text-decoration: none; }
+  & .index li.sub a::before { content: "› " / ""; }
+  & .index span { font-size: 0.9375rem; color: var(--ink-2); }
+}
+
+/* ---- Audio: radio panel and recording cards ------------------------------ */
+
+:root[data-style="samtal"] {
+  & .radio-panel {
+    padding: 1.25rem 1.5rem 1.5rem;
+    border: 0;
+    border-radius: 1rem;
+    background: var(--s-surface);
+  }
+  & .radio-row { gap: 0.75rem 1.25rem; }
+  & .radio-switch { font-weight: 600; }
+  & .radio-switch[aria-checked="true"] .radio-switch-track { background: var(--s-accent); border-color: var(--s-accent); }
+  & .radio-switch[aria-checked="true"] .radio-switch-track::after { background: var(--s-on-accent); }
+
+  /* Presets and stage toggles: pill tabs. */
+  & .radio-presets { flex-wrap: wrap; gap: 0.25rem; border: 0; }
+  & :is(.radio-preset, .radio-stage) {
+    min-height: 36px;
+    padding: 0.375rem 1rem;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--ink-2);
+    transition: background 0.15s, color 0.15s;
+  }
+  & .radio-preset + .radio-preset { border-left: 0; }
+  & :is(.radio-preset, .radio-stage):hover:not(:disabled) { background: var(--s-accent-tint); color: var(--ink-2); }
+  & .radio-preset[aria-checked="true"],
+  & .radio-preset[aria-checked="true"]:hover:not(:disabled),
+  & .radio-stage[aria-pressed="true"],
+  & .radio-stage[aria-pressed="true"]:hover:not(:disabled) { background: var(--s-accent); color: var(--s-on-accent); }
+  & .radio-stage { border: 1px solid var(--s-accent-edge); }
+  & .radio-stage:disabled { border-style: dashed; }
+
+  & .radio-cards { gap: 0.75rem; }
+  & .radio-card {
+    padding: 0.75rem 1rem 1rem;
+    border: 0;
+    border-radius: 0.75rem;
+    background: var(--bg);
+  }
+  & .radio-card legend { float: left; margin: 0 0 0.25rem; padding: 0; } /* inside the card, not on its edge */
+  & .radio-card-hint { clear: left; padding-top: 0.25rem; }
+  & .viz-canvas { border-color: var(--line); border-radius: 0.5rem; }
+
+  /* Recording cards: a meta line (topic · location), the summary in the
+     serif, then the player. */
+  & .clips { gap: 0.75rem; border: 0; grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr)); }
+  & .clip {
+    flex-flow: row wrap;
+    align-content: flex-start;
+    gap: 0.5rem 0.35rem;
+    padding: 1rem 1.125rem 1.125rem;
+    border: 0;
+    border-radius: 1rem;
+    background: var(--s-surface);
+  }
+  & .clip[hidden] { display: none; }
+  & .clip > * { flex: 1 0 100%; }
+  & .clip-topic,
+  & .clip-where {
+    flex: none;
+    max-width: 100%;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--ink-3);
+  }
+  & .clip-where::before { content: "· " / ""; }
+  & .clip-summary {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 400;
+    font-variation-settings: "opsz" 24;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  & .clip .player { order: 1; margin: 0.25rem 0 0; }
+}
+
+/* ---- Places: list cards, map controls, flag ------------------------------ */
+
+:root[data-style="samtal"] {
+  & .places-list-head { border-bottom-color: var(--line); letter-spacing: 0.05em; }
+  & .places-list { padding-right: 0.25rem; }
+  & .places-list > li + li { margin-top: 0.5rem; }
+  & .place-card {
+    padding: 0.75rem 1rem 0.875rem;
+    border: 0;
+    border-radius: 1rem;
+    background: var(--s-surface);
+  }
+  & .place-card:is(:hover, :focus-visible, .active) {
+    background: var(--card-hover);
+    box-shadow: inset 0 0 0 1.5px var(--highlight);
+  }
+  & .place-name {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    font-variation-settings: "opsz" 36;
+  }
+
+  & .map-controls { overflow: hidden; border-radius: 0.75rem; }
+  & .map-controls button:hover:not(:disabled) { background: var(--s-hover); color: var(--ink); }
+
+  & .flag {
+    border-color: var(--line);
+    border-left-color: var(--pin);
+    border-radius: 0.75rem;
+    background: var(--s-surface);
+  }
+  & .flag.flip-x { border-left-color: var(--line); border-right-color: var(--pin); }
+  & .flag h3 { font-family: var(--font-display); font-size: 1.125rem; font-weight: 600; }
+}
+
+/* ---- Components playground: demo cards ----------------------------------- */
+
+:root[data-style="samtal"] {
+  & .playground-player {
+    top: var(--s-bar); /* clear of the fixed top bar */
+    padding: 0.75rem 1rem 1rem;
+    border: 0;
+    border-radius: 1rem;
+    background: var(--s-surface);
+  }
+  & .playground-group > h2 { margin-top: 4rem; border-bottom: 0; }
+  & .demo {
+    margin-top: 0.75rem;
+    padding: 1.25rem 1.5rem 1.5rem;
+    border-radius: 1rem;
+    background: var(--s-surface);
+  }
+  & .demo h3 {
+    margin: 0 0 1rem;
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 600;
+    font-variation-settings: "opsz" 48;
+  }
+  & .demo-note { margin: -0.5rem 0 1.25rem; }
+  & .progress-dot { box-shadow: 0 0 0 2px var(--s-surface); }
+}
+
+/* ---- Listening view ------------------------------------------------------ */
+
+:root[data-style="samtal"] {
+  & .stage-button {
+    border-color: var(--s-accent-edge);
+    background: var(--bg);
+    color: var(--s-accent);
+  }
+  & .stage-button:hover { background: var(--s-accent-tint); color: var(--s-accent); }
+  & .stage-play,
+  & .stage-play:hover { border-color: var(--s-accent); background: var(--s-accent); color: var(--s-on-accent); }
+  & .stage-play:hover { background: var(--s-accent-hover); }
+  & .stage-sound-hint { border-color: var(--line-strong); background: var(--s-surface); }
+}

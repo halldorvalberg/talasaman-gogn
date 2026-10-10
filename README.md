@@ -32,15 +32,16 @@ Pushing to `main` deploys to GitHub Pages.
 ## Layout
 
 ```
-index.html              page shell; sets the theme before first paint
+index.html              page shell; sets the theme and style before first paint
 css/
   tokens.css            every colour, for both themes
-  fonts.css             self-hosted Fraunces (assets/fonts/)
+  fonts.css             self-hosted Fraunces and Inter (assets/fonts/)
   base.css              type, links, focus, reduced motion
   layout.css            sidebar, top bar, main column
   components.css        buttons, fold-outs, tables, legend, tooltip
   components/           player, map (base map, pins, flag, zoom controls, lens), talasaman.is image, listening view
   views/                one file per page
+  style-samtal.css      the Samtal style: an override layer, every rule under data-style="samtal"
 js/
   main.js               start-up and routing (#/places …; a page can follow its own address in place, like #/listen/7?t=90)
   pages.js              the page list (subpages, hidden pages, pages that take a path)
@@ -115,6 +116,15 @@ Both themes use talasaman.is's own colours. The page follows the browser's light
 - **Light:** the site itself, ink `#141a24` on cream `#fffdf9`.
 - **Dark:** cream `#ffffef` on ink. talasaman.is has no dark mode, but this is how it styles its dark areas.
 
+## Styles: Minimal and Samtal
+
+A second toggle above ☀/☾, **Minimal | Samtal**, switches the whole look. The choice is kept in `localStorage` (`style`) and set as `data-style` on `<html>` before first paint, like the theme; light/dark stays separate, so all four pairs work.
+
+- **Minimal** (the default): Scandinavian minimal, square outlined buttons, a sidebar.
+- **Samtal**: the look of [talasaman.is/samantektir](https://talasaman.is/samantektir). A top bar replaces the sidebar (a menu button below 1260 px; subpages show as a second row while you're in their section). The column is centred, each page has a small "SAMTAL · PAGE" label, a big serif title and a serif lede, cards sit on surface colour with rounded corners, buttons are blá, and tabs are pills. Inter is used for text and Fraunces stands in for their licensed "Roca". Its dark theme is our own, made from the same colours.
+
+`css/style-samtal.css` only overrides: with Samtal off, the page is exactly Minimal. Its colours are the `--s-*` tokens and the Samtal blocks in `css/tokens.css`.
+
 All colours live in `css/tokens.css`. The categorical colours `--accent-1` … `--accent-8` are blá, rauður, grænn, amber, clay, terracotta, teal and gul, in that order.
 
 - Only the first three stay distinct when any two touch, so the maps use only those.
@@ -136,3 +146,4 @@ Brand colours are kept as they are. Only the colours derived from them, such as 
 - Póstnúmeramörk: Byggt á gögnum frá Byggðastofnun.
 - Kortagrunnur: IS 50V, Landmælingar Íslands.
 - Letur: [Fraunces](https://github.com/undercasetype/Fraunces), SIL Open Font License 1.1 (`assets/fonts/OFL.txt`), self-hosted.
+- Letur: [Inter](https://github.com/rsms/inter), SIL Open Font License 1.1 (`assets/fonts/OFL-inter.txt`), self-hosted (latin + latin-ext from Google Fonts; nothing is loaded from Google at runtime).

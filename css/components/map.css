@@ -173,7 +173,7 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  box-shadow: inset 0 0 0 1.5px var(--line-strong); /* the lens's edge against the page, either theme */
+  box-shadow: inset 0 0 0 1.5px var(--lens-rim); /* the lens's edge against the page, either theme */
   pointer-events: none;
 }
 .location-zoom .basemap .coast { fill: var(--lens-paper); stroke: var(--lens-ink); stroke-width: 1px; }
@@ -204,7 +204,7 @@
   text-wrap: balance;
   pointer-events: none;
   paint-order: stroke fill; /* the halo goes under the letters, not over them */
-  -webkit-text-stroke: 0.4rem var(--lens-paper);
+  -webkit-text-stroke: 0.4rem var(--lens-halo);
   stroke-linejoin: round;
 }
 .lens-label[hidden] { display: none; }

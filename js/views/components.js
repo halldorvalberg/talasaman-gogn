@@ -43,22 +43,40 @@ const group = (title, ...demos) =>
  */
 async function loadClip() {
   const { data } = await fetchEndpoint('summaries');
-  const row = data.find((r) => r.audio);
-  if (!row) throw new Error('No recordings available');
+  const recordings = data.filter((r) => r.audio);
+  if (!recordings.length) throw new Error('No recordings available');
+  let row = randomOf(recordings);
   const audio = recordingAudio({ src: row.audio, preload: 'metadata' });
-  return { audio, caption: recordingTitle(row), rows: data };
+  const caption = el('span', {}, recordingTitle(row));
+  /** Switch to another random recording, playing it if one was playing. */
+  const shuffle = () => {
+    const wasPlaying = !audio.paused;
+    row = randomOf(recordings, row);
+    audio.src = row.audio;
+    caption.textContent = recordingTitle(row);
+    if (wasPlaying) audio.play();
+  };
+  return { audio, caption, shuffle, rows: data };
 }
 
-/** The bar at the top: what is playing, play/pause, a progress line and the time. */
+/** A random item of `items`, other than `not` when there is a choice. */
+function randomOf(items, not = null) {
+  const choices = items.length > 1 ? items.filter((item) => item !== not) : items;
+  return choices[Math.floor(Math.random() * choices.length)];
+}
+
+/** The bar at the top: what is playing, play/pause, another recording, a progress line and the time. */
 function playerBar(clip) {
   const bar = el('div', { className: 'playground-player', role: 'region', ariaLabel: 'Player' },
     el('p', { className: 'table-status' }, 'Loading a recording…'));
-  clip.then(({ audio, caption }) => {
-    const line = createProgressLine({ label: `Position in the recording: ${caption}` });
+  clip.then(({ audio, caption, shuffle }) => {
+    const line = createProgressLine({ label: 'Position in the recording' });
     line.connect(audio);
+    const another = el('button', { className: 'demo-button' }, 'Another recording');
+    another.addEventListener('click', shuffle);
     bar.replaceChildren(
-      el('p', { className: 'demo-caption' }, 'Now playing: ', caption),
-      el('div', { className: 'demo-player' }, playButton(audioPlayback(audio)), line.element, timeReadout(audio).element),
+      el('p', { className: 'demo-caption', ariaLive: 'polite' }, 'Now playing: ', caption),
+      el('div', { className: 'demo-player' }, playButton(audioPlayback(audio)), another, line.element, timeReadout(audio).element),
       audio); // on the page, so leaving the page stops it
   }).catch((err) => bar.replaceChildren(el('p', { className: 'error', role: 'alert' }, err.message)));
   return bar;
@@ -87,10 +105,17 @@ function drivenLineDemo() {
 
 /** Waveform bars of the shared recording, lit in step with it. */
 async function waveformDemo(clip) {
-  const { audio, caption } = await clip;
-  const bars = createWaveformBars({ bars: 64, label: `Loudness over time: ${caption}` });
-  await bars.load(audio.src);
+  const { audio } = await clip;
+  const bars = createWaveformBars({ bars: 64, label: 'Loudness over time of the recording playing above' });
+  let shown = audio.src;
+  await bars.load(shown);
   bars.follow(audio);
+  // Another recording chosen above: draw its bars instead.
+  audio.addEventListener('loadstart', () => {
+    if (audio.src === shown) return;
+    shown = audio.src;
+    bars.load(shown);
+  });
   return [bars.element];
 }
 
@@ -150,9 +175,10 @@ async function zoomDemo() {
 }
 
 /** The location zoom in the middle of the talasaman.is image's bubbles, which move with the recording. */
-async function chorusZoomDemo() {
+/** The chorus zoom in a tone ('line' or 'blue'), with its venue picker. */
+async function chorusZoomDemo(tone = 'line') {
   const { base, venues } = await loadVenues();
-  const chorus = chorusZoom(base);
+  const chorus = chorusZoom(base, { tone });
   return [venueControls(venues, chorus), chorus.element];
 }
 
@@ -202,7 +228,10 @@ const mapsGroup = () => group('Maps',
     zoomDemo),
   demo('Location zoom in the chorus',
     `The same lens where the front-page image's lettering was, ringed by its eleven bubbles: they breathe while all is quiet and swell with their own pitch range while a recording plays. ${PLAY_FIRST}`,
-    chorusZoomDemo));
+    chorusZoomDemo),
+  demo('Location zoom in the chorus, blue',
+    `The same, all in blue and white: the map in the bubbles' blue with white lines, and the venue's name in white with a blue outline. ${PLAY_FIRST}`,
+    () => chorusZoomDemo('blue')));
 
 const dataGroup = (clip) => group('Data',
   demo('Table with filters',

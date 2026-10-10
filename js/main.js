@@ -1,12 +1,13 @@
-// Entry point: sets up the sidebar and theme, builds the page links and shows
-// the page named in the URL hash (#/places etc.). A page may take part of the
-// address for itself (#/listen/7?t=90); while the address stays on that page,
-// the page follows it in place instead of being built again.
+// Entry point: sets up the sidebar, the theme and the style (Minimal |
+// Samtal), builds the page links and shows the page named in the URL hash
+// (#/places etc.). A page may take part of the address for itself
+// (#/listen/7?t=90); while the address stays on that page, the page follows
+// it in place instead of being built again.
 
 import { el } from './lib/dom.js';
 import { PAGES, pageForHash, ancestorsOf, depthClass } from './pages.js';
-import { setupSidebar, closeSidebarIfNarrow } from './components/sidebar.js';
-import { setupThemeToggle } from './components/theme-toggle.js';
+import { setupSidebar, closeSidebarIfNarrow, followStyle } from './components/sidebar.js';
+import { setupThemeToggle, setupStyleToggle } from './components/theme-toggle.js';
 import { endpointPage } from './views/endpoint.js';
 import { logoPulse } from './components/logo-pulse.js';
 import { showAudioDebug } from './components/audio-debug.js';
@@ -74,6 +75,7 @@ function route() {
 setupSidebar();
 document.getElementById('brand-mark').replaceWith(logoPulse({ className: 'brand-mark' }));
 setupThemeToggle();
+setupStyleToggle(followStyle);
 buildNav();
 window.addEventListener('hashchange', route);
 route();

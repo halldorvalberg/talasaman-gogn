@@ -69,6 +69,8 @@
   --lens-paper: #fff;          /* land, sea, and the halo round names */
   --lens-ink: #141a24;         /* ink: coastline, map lines, names */
   --lens-pin: var(--accent-1); /* blá, the logo blue */
+  --lens-rim: var(--line-strong); /* the lens's edge against the page */
+  --lens-halo: var(--lens-paper); /* the outline round names */
 }
 
 :root[data-theme="dark"] {
@@ -100,4 +102,76 @@
   --ice: color-mix(in oklab, #ffffef 85%, #141a24);
   --ice-line: color-mix(in oklab, #ffffef 60%, #141a24);
   --water: color-mix(in oklab, var(--accent-1) 70%, #141a24);
+}
+
+/* ---- Samtal style (data-style="samtal") ---------------------------------- */
+/* The look of talasaman.is/samantektir: cream page, surface cards, blá
+   buttons and pills. Only used under data-style="samtal" (see
+   css/style-samtal.css); the Minimal style never reads these. The light block
+   also applies under dark, so the dark block below resets everything it sets.
+   Text on blá uses a deeper blá (--s-accent) so it reaches 7:1; the brand blá
+   itself stays for marks, focus rings and pill edges. */
+
+:root[data-style="samtal"] {
+  --bg: #ffffef;                                                  /* cream */
+  --ink: #141a24;                                                 /* ink */
+  --ink-2: color-mix(in oklab, #141a24 84%, #ffffef);             /* ink/85 */
+  --ink-3: #4f4741;                     /* muted #6b5f54, darkened for 7:1 on surface */
+  --line: color-mix(in oklab, #141a24 12%, transparent);          /* ink/10 */
+  --line-strong: color-mix(in oklab, #141a24 52%, #ffffef);       /* control edges, 3:1 */
+  --card-hover: color-mix(in oklab, var(--accent-1) 9%, var(--s-surface));
+  --bin-empty: #ffffef;
+  --ice: #ffffef;
+
+  --s-surface: #f4f2d6;                                           /* cards */
+  --s-accent: color-mix(in oklab, #2753f5 70%, #141a24);          /* blá, deepened: buttons, active pills, link text */
+  --s-accent-hover: color-mix(in oklab, #2753f5 58%, #141a24);    /* hovered blue button */
+  --s-on-accent: #ffffef;                                         /* cream on --s-accent */
+  --s-accent-edge: color-mix(in oklab, #2753f5 72%, #ffffef);     /* blá/30, firmed to 3:1: pill button edges */
+  --s-accent-tint: color-mix(in oklab, #2753f5 9%, #ffffef);      /* blá/10: hovered pill */
+  --s-hover: color-mix(in oklab, #141a24 6%, #ffffef);            /* ink/5: hovered nav link */
+  --s-focus: #2753f5;                                             /* blá focus ring */
+  --s-control: #2753f5;                                           /* sliders, checkboxes (accent-color) */
+}
+
+:root[data-style="samtal"][data-theme="dark"] {
+  --bg: #141a24;                                                  /* ink */
+  --ink: #ffffef;                                                 /* cream */
+  --ink-2: color-mix(in oklab, #ffffef 82%, #141a24);
+  --ink-3: color-mix(in oklab, #ffffef 72%, #141a24);             /* 7:1 on the card colour */
+  --line: color-mix(in oklab, #ffffef 14%, transparent);
+  --line-strong: color-mix(in oklab, #ffffef 45%, #141a24);
+  --card-hover: color-mix(in oklab, var(--accent-1) 22%, var(--s-surface));
+  --bin-empty: #141a24;
+  --ice: color-mix(in oklab, #ffffef 85%, #141a24);
+
+  --s-surface: color-mix(in oklab, #ffffef 8%, #141a24);          /* a lighter ink for cards */
+  --s-accent: color-mix(in oklab, #2753f5 44%, #ffffef);          /* blá, lifted: fills under ink text, link text */
+  --s-accent-hover: color-mix(in oklab, #2753f5 32%, #ffffef);    /* hovered blue button */
+  --s-on-accent: #141a24;                                         /* ink on the lifted blá */
+  --s-accent-edge: color-mix(in oklab, #2753f5 70%, #ffffef);
+  --s-accent-tint: color-mix(in oklab, #2753f5 20%, #141a24);
+  --s-hover: color-mix(in oklab, #ffffef 9%, #141a24);
+  --s-focus: color-mix(in oklab, #2753f5 52%, #ffffef);
+  --hero-bubble: color-mix(in oklab, var(--accent-1) 91%, #ffffef); /* 3:1 on the card colour too, cream lettering 4.5:1 */
+  --s-control: color-mix(in oklab, #2753f5 70%, #ffffef);
+}
+
+/* The blue lens (chorusZoom({ tone: 'blue' })): the map in the bubbles' own
+   blue and lettering colour, so lens and bubbles read as one blue-and-white
+   image. Names are lettering-coloured on a deeper-blue outline (so the small
+   details line reaches 7:1); the pin turns lettering-coloured so it shows on
+   blue. Defined on :root (so the contrast checker can read them), following
+   --hero-bubble in every theme and style. */
+:root {
+  --lens-blue-paper: var(--hero-bubble);
+  --lens-blue-ink: var(--on-hero-bubble);
+  --lens-blue-halo: color-mix(in oklab, var(--hero-bubble) 72%, #141a24);
+}
+.lens-blue {
+  --lens-paper: var(--lens-blue-paper);
+  --lens-ink: var(--lens-blue-ink);
+  --lens-pin: var(--lens-blue-ink);
+  --lens-rim: var(--lens-blue-ink);
+  --lens-halo: var(--lens-blue-halo);
 }
