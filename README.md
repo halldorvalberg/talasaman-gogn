@@ -45,12 +45,15 @@ npx mapshaper raw.geojson -filter-fields postnumer,stadur -simplify 6% keep-shap
 | `lake` | `vatnafar_flakar` | `yfirbordsvatn=3`, > 2 km² |
 | `river` | `vatnafar_flakar` | `yfirbordsvatn=1` (wide rivers drawn as areas), dissolved, > 1 km² |
 
-## Palettes
+## Themes
 
-The top-right button switches between two palettes, and the page remembers the choice.
+Both themes use talasaman.is's own colours (its `--color-*` CSS variables).
+The page follows the browser's light/dark setting until someone uses the ☀/☾ toggle in the sidebar, and then remembers their choice.
 
-**Talasaman.is (default):** the site's own `--color-*` CSS variables on a cream background (#fffdf9) with dark ink text (#141a24).
-Categorical colours are `--accent-1` … `--accent-8` in `style.css`. Use them in this order:
+- **Light:** the site itself, with dark ink text (#141a24) on the cream background (#fffdf9).
+- **Dark** (`data-theme="dark"`): cream text (#ffffef) on an ink background (#141a24). talasaman.is has no dark mode, but this is how it styles its dark areas (code blocks, the video panel). Lighter text steps reuse its opacity scale, in cream instead of ink.
+
+Categorical colours are `--accent-1` … `--accent-8` in `style.css`. They are the same in both themes. Use them in this order:
 
 | | Name | Hex |
 |---|---|---|
@@ -63,11 +66,8 @@ Categorical colours are `--accent-1` … `--accent-8` in `style.css`. Use them i
 | 7 | teal | `#2f5d62` |
 | 8 | gul | `#ffc60b` |
 
-Slots 1–3 stay distinct on cream even when any two touch, so the maps use only those.
-Slots 4–8 are the brand colours as-is. They don't pass the checks on cream (gul is too light, teal reads grey), so use them with labels or a table.
-
-**Monochrome** (`data-palette="mono"`): a black background, white hairlines and greys only.
-Amounts are shown by lightness, from dark (few) to white (many). Categories have no colour here, so they need labels, patterns or position.
+Slots 1–3 stay distinct on both cream and ink, even when any two touch, so the maps use only those.
+Slots 4–8 are the brand colours as-is. They don't pass those checks, so use them with labels or a table.
 
 ## Licence
 

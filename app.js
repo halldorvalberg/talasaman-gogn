@@ -63,23 +63,29 @@ toggle.addEventListener('click', () => {
   if (!narrow.matches) localStorage.setItem('sidebar', open ? 'open' : 'closed');
 });
 
-// ---- Palette ----------------------------------------------------------------
+// ---- Theme ------------------------------------------------------------------
+// index.html sets data-theme before first paint. Follow the browser until the
+// user picks one; after that, remember their choice.
 
-const PALETTES = { talasaman: 'Talasaman.is', mono: 'Monochrome' };
-const paletteButton = document.getElementById('toggle-palette');
-const paletteName = document.getElementById('palette-name');
+const themeButtons = document.querySelectorAll('[data-theme-choice]');
+const prefersDark = matchMedia('(prefers-color-scheme: dark)');
 
-function setPalette(name) {
-  if (name === 'mono') document.documentElement.dataset.palette = name;
-  else delete document.documentElement.dataset.palette;
-  localStorage.setItem('palette', name);
-  paletteName.textContent = PALETTES[name];
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  for (const b of themeButtons) b.setAttribute('aria-pressed', String(b.dataset.themeChoice === theme));
 }
 
-setPalette(document.documentElement.dataset.palette === 'mono' ? 'mono' : 'talasaman');
-paletteButton.addEventListener('click', () => {
-  setPalette(document.documentElement.dataset.palette === 'mono' ? 'talasaman' : 'mono');
+applyTheme(document.documentElement.dataset.theme);
+for (const b of themeButtons) {
+  b.addEventListener('click', () => {
+    localStorage.setItem('theme', b.dataset.themeChoice);
+    applyTheme(b.dataset.themeChoice);
+  });
+}
+prefersDark.addEventListener('change', (e) => {
+  if (!localStorage.getItem('theme')) applyTheme(e.matches ? 'dark' : 'light');
 });
+localStorage.removeItem('palette'); // from the old palette switch
 
 for (const p of PAGES) {
   const a = document.createElement('a');
