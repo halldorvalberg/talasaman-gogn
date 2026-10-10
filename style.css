@@ -35,11 +35,13 @@
   --bin-4: var(--accent-2);                                 /* 21–40 */
   --bin-5: color-mix(in oklab, var(--accent-2) 65%, #000); /* 41+   */
 
-  /* Places map */
-  --water: color-mix(in oklab, var(--accent-1) 75%, var(--bg));
-  --ice: color-mix(in oklab, var(--ink) 18%, var(--bg));
-  --ice-line: color-mix(in oklab, var(--ink) 35%, var(--bg));
-  --pin: var(--accent-2);
+  /* Places map: a paper map in the site's earth tones. */
+  --land: #f3e7d6;        /* sand */
+  --coast: #6b5f54;       /* muted */
+  --ice: #fffdf9;         /* canvas — glaciers read as the whitest thing */
+  --ice-line: #d9c6ab;
+  --water: color-mix(in oklab, var(--accent-1) 45%, var(--bg));
+  --pin: var(--accent-2); /* rauður */
 
   /* Palette button swatch */
   --dot-1: var(--accent-1);
@@ -74,6 +76,8 @@
   --bin-4: #c3c3c0;
   --bin-5: #f2f2f0;
 
+  --land: transparent;
+  --coast: var(--ink);
   --water: #42423f;
   --ice: #8a8a87;
   --ice-line: #a3a3a0;
@@ -458,12 +462,13 @@ td.empty { color: var(--ink-3); }
   height: 100%;
 }
 .basemap path { stroke-linejoin: round; }
-.basemap .coast   { fill: none; stroke: var(--ink); stroke-width: 1px; }
+.basemap .coast   { fill: var(--land); stroke: var(--coast); stroke-width: 1px; }
 .basemap .glacier { fill: var(--ice); stroke: var(--ice-line); stroke-width: 0.5px; }
 .basemap .lake,
 .basemap .river   { fill: var(--water); stroke: none; }
 
 .swatch.key-glacier { background: var(--ice); }
+.swatch.key-land    { background: var(--land); }
 .swatch.key-water   { background: var(--water); }
 .swatch.key-pin     { background: var(--pin); border-radius: 50%; border: 0; width: 9px; height: 9px; }
 
@@ -510,6 +515,33 @@ td.empty { color: var(--ink-3); }
 }
 @media (prefers-reduced-motion: reduce) {
   .pin:hover { animation: none; }
+}
+
+/* Places that missed the map */
+.offmap-section h2 { margin-top: 2.5rem; }
+.offmap-list { border-top: 1px solid var(--line); }
+.offmap-list details { border-top: 0; }
+.offmap-list summary {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 2fr) minmax(9rem, 1fr) minmax(9rem, 1fr);
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.8rem 0;
+  font-size: 0.85rem;
+}
+.offmap-list summary::before { width: auto; }
+.offmap-name { color: var(--ink); }
+.offmap-coord { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.offmap-why { color: var(--ink-3); text-align: right; }
+.offmap-list details p {
+  margin: 0 0 1rem 2.5rem;
+  max-width: 40rem;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+@media (max-width: 800px) {
+  .offmap-list summary { grid-template-columns: 1.5rem 1fr; }
+  .offmap-coord, .offmap-why { grid-column: 2; text-align: left; }
 }
 
 /* The flag hangs off the pin head like a pennant on a pole. */

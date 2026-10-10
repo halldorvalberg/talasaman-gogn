@@ -5,7 +5,7 @@ import { project, pathFor } from './map.js';
 
 const PAD = 0.15; // degrees around the coastline bbox
 const SVG_NS = 'http://www.w3.org/2000/svg';
-const DRAW_ORDER = ['glacier', 'lake', 'river', 'coast'];
+const DRAW_ORDER = ['coast', 'glacier', 'lake', 'river']; // land first, water and ice on top
 
 let basePromise;
 function loadBase() {
@@ -37,6 +37,29 @@ function el(tag, props = {}, ...children) {
   const node = Object.assign(document.createElement(tag), props);
   node.append(...children);
   return node;
+}
+
+// Roughly Iceland and its waters: a point in here that missed the map has
+// bad coordinates rather than being abroad.
+const ICELAND_WATERS = { west: -26, east: -12, south: 62, north: 67.5 };
+
+const fmtCoord = ({ lat, lng }) =>
+  `${Math.abs(lat).toFixed(2)}° ${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(2)}° ${lng >= 0 ? 'E' : 'W'}`;
+
+function offMapList(rows) {
+  const list = el('div', { className: 'offmap-list' });
+  for (const r of rows) {
+    const why = inside(ICELAND_WATERS, r) ? 'Coordinates in the sea' : 'Outside Iceland';
+    list.append(el('details', { className: 'offmap' },
+      el('summary', {},
+        el('span', { className: 'offmap-name' }, r.place),
+        el('span', { className: 'offmap-coord' }, fmtCoord(r)),
+        el('span', { className: 'offmap-why' }, why)),
+      el('p', {}, r.reason || '—')));
+  }
+  return el('section', { className: 'offmap-section' },
+    el('h2', {}, `Not on the map · ${rows.length}`),
+    list);
 }
 
 export async function renderPlacesMap(rows, buildTable) {
@@ -153,11 +176,7 @@ export async function renderPlacesMap(rows, buildTable) {
 
   const root = el('div', { className: 'viz' }, caption, legend, stage);
 
-  if (offMap.length) {
-    root.append(el('p', { className: 'caption' },
-      'Not on the map (outside Iceland or coordinates in the sea): ' +
-      offMap.map((r) => `${r.place} (${r.lat}, ${r.lng})`).join(' · ')));
-  }
+  if (offMap.length) root.append(offMapList(offMap));
 
   root.append(
     el('p', { className: 'caption' }, 'Kortagrunnur: IS 50V, Landmælingar Íslands.'),
