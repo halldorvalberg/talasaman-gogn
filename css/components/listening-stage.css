@@ -4,6 +4,9 @@
    (a phone on its side) put the player beside the image. */
 
 body.stage-open { overflow: hidden; }
+/* The stage covers the page: keep the sidebar and top bar out of view and out of reach. */
+body.stage-open #sidebar,
+body.stage-open .topbar { visibility: hidden; }
 .stage {
   position: fixed;
   inset: 0;
@@ -73,6 +76,55 @@ body.stage-open { overflow: hidden; }
   right: max(1rem, env(safe-area-inset-right));
   z-index: 1;
 }
+
+/* ---- Start panel ---- */
+/* Shown when the browser refuses to play before a click (a link opened directly). */
+.stage-start {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  pointer-events: none; /* only the card takes clicks; the rest of the stage still works */
+}
+.stage-start[hidden] { display: none; }
+.stage-start-card {
+  pointer-events: auto;
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  max-width: 22rem;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  text-align: center;
+}
+.stage-start-button {
+  min-width: 10rem;
+  min-height: 4.5rem;
+  padding: 0.75rem 2.5rem;
+  border: 2px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--ink);
+  font: inherit;
+  font-size: 1.75rem;
+  font-weight: 500;
+  color: var(--bg);
+  cursor: pointer;
+}
+.stage-start-button:hover { background: var(--bg); color: var(--ink); }
+.stage-start-button:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+.stage-start-hint { margin: 0; color: var(--ink-2); }
+
+/* ---- Loading and error message ---- */
+.stage-message {
+  grid-template-rows: none;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+}
+.stage-message p { margin: 0.5rem 0; }
 
 /* Narrow screens: the progress line gets a row of its own above the buttons. */
 @media (max-width: 520px) {

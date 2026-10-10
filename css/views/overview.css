@@ -31,6 +31,7 @@
 .index a:hover { text-decoration: underline; }
 .index span { max-width: 39em; color: var(--ink-3); }
 .index li.sub a { padding-left: 1.25rem; }
+.index li.sub-2 a { padding-left: 2.5rem; }
 .index li.sub a::before { content: "↳ " / ""; color: var(--ink-3); }
 
 @media (max-width: 800px) {

@@ -1,23 +1,25 @@
 // A round lens onto the map of Iceland that flies into one location: it
 // starts on the whole country, zooms and pans in with an eased flight, and
-// the location's pin wiggles when it lands and opens its flag (a name and a
-// line of text). Showing another location hops out just far enough to see
-// both, then in. The flag hangs from the pin over the lens's edge, so long
-// text still has room. Built from the same parts as the Places map: base
-// map, projection, zoom maths, pin and flag.
+// the location's pin wiggles when it lands and its name is written on the
+// map under it, with a smaller line of text below. Showing another location
+// hops out just far enough to see both, then in. The lens is a line map in
+// the logo's black and white (the same in both themes) with a blue pin.
+// Built from the same parts as the Places map: base map, projection, zoom
+// maths and pin.
 
 import { el, replayClass } from '../lib/dom.js';
 import { project, polygonsOf, viewBoxAttr } from '../lib/geo.js';
+import { clamp } from '../lib/math.js';
 import { tween, easeInOut } from '../lib/motion.js';
 import { HOME, centreOn, visibleFrame, flightPath } from '../lib/map-view.js';
 import { layoutPins, placeOnScreen } from '../lib/map-pins.js';
 import { drawBaseMap, featuresOf } from './basemap.js';
-import { pinButton } from './map-pin.js';
-import { createFlag } from './map-flag.js';
+import { pinMarker } from './map-pin.js';
 
 const LANDING_ZOOM = 6;   // 1 = all of Iceland; 6 shows a town and what is around it
 const FLIGHT_TIME = 1800; // ms
 const LENS_PAD = 1.04;    // a little sea between the coast and the rim
+const LABEL_SPAN = 0.32;  // the label's middle stays this far (lens fractions) either side of centre
 
 /** Every point of the coastline's outer rings, in map units. */
 function coastPoints(base) {
@@ -38,12 +40,31 @@ function lensFrame(base) {
   return { x: cx - r, y: cy - r, w: 2 * r, h: 2 * r };
 }
 
-/** Put a pin's button where its location is on screen for the current view. */
-function placePin(pin, view, lens) {
-  const { width, height } = lens.getBoundingClientRect();
-  placeOnScreen([pin], view, width, height);
-  pin.el.style.left = `${pin.sx}px`;
-  pin.el.style.top = `${pin.sy}px`;
+/** Put an absolutely positioned node at (x, y) px. */
+function placeAt(node, x, y) {
+  node.style.left = `${x}px`;
+  node.style.top = `${y}px`;
+}
+
+/**
+ * The name written on the map under the pin, with a smaller line of text
+ * below it. Seen, not read out: the lens's status line speaks for it.
+ */
+function mapLabel() {
+  const name = el('span', { className: 'lens-label-name' });
+  const text = el('span', { className: 'lens-label-text' });
+  const element = el('div', { className: 'lens-label', hidden: true }, name, text);
+  element.setAttribute('aria-hidden', 'true');
+  return {
+    element,
+    show(location) {
+      name.textContent = location.name;
+      text.textContent = location.text ?? '';
+      element.hidden = false;
+      replayClass(element, 'appear');
+    },
+    hide() { element.hidden = true; },
+  };
 }
 
 /**
@@ -56,18 +77,28 @@ function placePin(pin, view, lens) {
 export function createLocationZoom(base, { zoom = LANDING_ZOOM, duration = FLIGHT_TIME } = {}) {
   const frame = lensFrame(base);
   const svg = drawBaseMap(base, frame);
-  const lens = el('div', { className: 'location-lens' }, svg);
-  const stage = el('div', { className: 'location-zoom' }, lens);
-  const flag = createFlag(stage);
+  const pin = pinMarker();
+  const label = mapLabel();
+  const status = el('p', { className: 'lens-status', role: 'status' }); // read out on landing
+  const lens = el('div', { className: 'location-lens' }, svg, pin, label.element);
+  const stage = el('div', { className: 'location-zoom' }, lens, status);
   let view = HOME;
-  let pin = null; // the location being shown
+  let spot = null; // the location being shown, as a pin from layoutPins
   let flight = { cancel() {} };
+  pin.hidden = true;
+
+  /** Move the pin and its label to where the location is in the current view. */
+  function placeMarks() {
+    const { width, height } = lens.getBoundingClientRect();
+    placeOnScreen([spot], view, width, height);
+    placeAt(pin, spot.sx, spot.sy);
+    placeAt(label.element, clamp(spot.sx, width * (0.5 - LABEL_SPAN), width * (0.5 + LABEL_SPAN)), spot.sy);
+  }
 
   function draw() {
     if (!lens.getBoundingClientRect().width) return;
     svg.setAttribute('viewBox', viewBoxAttr(visibleFrame(view, frame)));
-    if (pin) placePin(pin, view, lens);
-    flag.follow();
+    if (spot) placeMarks();
   }
 
   /** Fly from the current view to another; resolves on landing (not if overtaken). */
@@ -78,35 +109,27 @@ export function createLocationZoom(base, { zoom = LANDING_ZOOM, duration = FLIGH
     return flight.done;
   }
 
-  /** Swap the pin for one on a new location; its flag opens only on landing. */
-  function dropPin({ name, text, lat, lng }) {
-    flag.close();
-    pin?.el.remove();
-    pin = layoutPins([{ place: name, reason: text, lat, lng }], frame)[0]; // the flag's row shape
-    pin.el = pinButton(pin, () => flag.toggle(pin));
-    lens.append(pin.el);
-    draw();
-  }
-
-  stage.append(flag.element);
-  stage.addEventListener('click', () => flag.close());
-  stage.addEventListener('keydown', (e) => { if (e.key === 'Escape') flag.close({ returnFocus: true }); });
   new ResizeObserver(draw).observe(lens);
 
   return {
     element: stage,
     /** Fly to a location ({ name, text, lat, lng }); resolves when it has landed. */
     async showLocation(location) {
-      dropPin(location);
-      const landing = pin;
-      await flyTo(centreOn(pin.fx, pin.fy, zoom));
-      if (pin !== landing) return;
-      replayClass(pin.el, 'wiggle');
-      flag.open(pin, { focus: false }); // focus stays on whatever picked the location
+      label.hide();
+      const landing = layoutPins([{ place: location.name, lat: location.lat, lng: location.lng }], frame)[0];
+      spot = landing;
+      pin.hidden = false;
+      draw();
+      await flyTo(centreOn(spot.fx, spot.fy, zoom));
+      if (spot !== landing) return;
+      replayClass(pin, 'wiggle');
+      label.show(location);
+      status.textContent = location.text ? `${location.name}: ${location.text}` : location.name;
     },
-    /** Close the flag and fly back out to the whole country. */
+    /** Hide the name and fly back out to the whole country. */
     showAll() {
-      flag.close();
+      label.hide();
+      status.textContent = 'All of Iceland';
       return flyTo(HOME);
     },
   };

@@ -4,6 +4,7 @@
 import { el } from '../lib/dom.js';
 import { fetchEndpoint } from '../lib/data.js';
 import { formatNumber } from '../lib/format.js';
+import { depthClass } from '../pages.js';
 
 const STAT_LABELS = {
   participants: 'Participants',
@@ -28,9 +29,10 @@ function statTiles() {
   return tiles;
 }
 
+/** A list of the pages with an intro, subpages indented under their parents. */
 function datasetIndex(pages) {
-  return el('ul', { className: 'index' }, ...pages.filter((p) => p.intro).map((p) =>
-    el('li', { className: p.parent ? 'sub' : '' },
+  return el('ul', { className: 'index' }, ...pages.filter((p) => p.intro && !p.hidden).map((p) =>
+    el('li', { className: depthClass(p) },
       el('a', { href: `#/${p.id}` }, p.title),
       el('span', {}, firstSentence(p.intro)))));
 }

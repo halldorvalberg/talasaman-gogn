@@ -154,3 +154,33 @@ td.empty { color: var(--ink-3); }
   z-index: 5;
 }
 .tooltip strong { font-weight: 500; color: var(--ink); }
+
+/* ---- Count bars (count-bars.js) ----------------------------------------- */
+
+.count-bars { width: min(44rem, 100%); table-layout: fixed; margin-top: 1.5rem; }
+.count-bars th:first-child { width: 40%; }
+.count-bars th.num { width: 6.5rem; }
+.count-bars caption {
+  padding-bottom: 0.5rem;
+  text-align: left;
+  font-weight: 500;
+  color: var(--ink);
+}
+.count-bars tbody th {
+  border-bottom: 1px solid var(--line); /* like the other cells in its row */
+  font-size: 1rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.count-bars th, .count-bars td { vertical-align: middle; }
+.count-bar {
+  display: block;
+  width: calc(var(--share) * 100%);
+  min-width: 3px;
+  height: 0.75rem;
+  border-radius: 2px;
+  background: var(--highlight);
+}

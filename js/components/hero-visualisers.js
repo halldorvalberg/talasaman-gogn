@@ -4,32 +4,42 @@
 //   heroChorus()    the whole image; each bubble swells with its own frequency band,
 //                   calmly (slow, small swells) or aggressively (jolts outward and tilts)
 //   heroSpectrum()  the image taken apart: the bubbles in a row, low to high pitch
+// The parts are exported for other figures made from the image (chorus-zoom.js).
 
 import { el, svgEl } from '../lib/dom.js';
 import { reducedMotion } from '../lib/motion.js';
+import { middleOf } from '../lib/math.js';
 import { onBands, logBands } from '../audio/level-meter.js';
 import { loadHero } from './talasaman-hero.js';
 
+/** A check that turns false for good once `node` has been on the page and taken off it. */
+export function liveCheck(node) {
+  let shown = false;
+  return () => {
+    if (node.isConnected) shown = true;
+    return node.isConnected || !shown;
+  };
+}
+
 /**
- * A container that fills itself with `build(hero)` once the image has loaded,
- * and an `isLive()` check: false once it has been taken off the page.
+ * A container that fills itself with `build(hero, isLive)` once the image has
+ * loaded; `isLive()` is false once it has been taken off the page.
  */
 function heroFigure(className, label, build) {
   const figure = el('div', { className: `hero-viz ${className}`, role: 'img', ariaLabel: label });
-  let shown = false;
-  const isLive = () => {
-    if (figure.isConnected) shown = true;
-    return figure.isConnected || !shown;
-  };
+  const isLive = liveCheck(figure);
   loadHero()
     .then((hero) => figure.replaceChildren(build(hero, isLive)))
     .catch((err) => figure.replaceChildren(el('p', { className: 'error' }, err.message)));
   return figure;
 }
 
+/** One path per bubble of the image, for animating. */
+export const bubblePaths = (hero) => hero.bubbles.map(({ d }) => svgEl('path', { d, class: 'hero-viz-bubble' }));
+
 /** The hero as one SVG: bubble paths (returned for animating) and its lettering. */
 function heroSvg(hero) {
-  const bubbles = hero.bubbles.map(({ d }) => svgEl('path', { d, class: 'hero-viz-bubble' }));
+  const bubbles = bubblePaths(hero);
   const lines = hero.lines.map((g) => g.cloneNode(true));
   lines.forEach((g) => { g.removeAttribute('style'); g.setAttribute('class', 'hero-viz-line'); });
   const svg = svgEl('svg', { viewBox: hero.viewBox, 'aria-hidden': 'true' },
@@ -48,14 +58,17 @@ function whileLive(isLive, subscribe, callback) {
 
 const scale = (node, amount) => { node.style.transform = `scale(${amount})`; };
 
-/** The bounding box of a path, measured off-screen. */
-function boxOf(d) {
-  const probe = svgEl('svg', { class: 'measure' }, svgEl('path', { d }));
+/** The bounding box of an SVG node (a copy of it), measured off-screen. */
+export function measureBox(node) {
+  const probe = svgEl('svg', { class: 'measure' }, node.cloneNode(true));
   document.body.append(probe);
   const box = probe.firstChild.getBBox();
   probe.remove();
   return box;
 }
+
+/** The bounding box of a path's `d`. */
+export const boxOf = (d) => measureBox(svgEl('path', { d }));
 
 /** A viewBox that frames one path with some room around it. */
 function viewBoxAround(d) {
@@ -77,14 +90,31 @@ const MOODS = {
 
 /** Where each bubble sits relative to the middle of the image, as a unit direction. */
 function outwardDirections(hero) {
-  const boxes = hero.bubbles.map(({ d }) => boxOf(d));
-  const centre = (b) => [b.x + b.width / 2, b.y + b.height / 2];
-  const [mx, my] = boxes.map(centre).reduce(([ax, ay], [x, y]) => [ax + x / boxes.length, ay + y / boxes.length], [0, 0]);
-  return boxes.map((b) => {
-    const [x, y] = centre(b);
+  const centres = hero.bubbles.map(({ d }) => middleOf(boxOf(d)));
+  const [mx, my] = centres.reduce(([ax, ay], [x, y]) => [ax + x / centres.length, ay + y / centres.length], [0, 0]);
+  return centres.map(([x, y]) => {
     const length = Math.hypot(x - mx, y - my) || 1;
     return [(x - mx) / length, (y - my) / length];
   });
+}
+
+/**
+ * Move bubble path i with the i-th pitch band, low to high, in a mood (see
+ * MOODS), until the figure leaves the page. Pushes go along `directions`.
+ * @param {SVGPathElement[]} bubbles
+ * @param {Array<[number, number]>} directions unit vectors, one per bubble
+ * @param {() => boolean} isLive
+ */
+export function moveWithBands(bubbles, directions, isLive, mood = 'calm') {
+  const { follow, swell, push, tilt } = MOODS[mood];
+  const shown = bubbles.map(() => 0);
+  whileLive(isLive, (fn) => onBands(logBands(bubbles.length), fn), (values) =>
+    bubbles.forEach((b, i) => {
+      shown[i] += (values[i] - shown[i]) * follow;
+      const v = shown[i], [dx, dy] = directions[i];
+      const turn = (i % 2 ? 1 : -1) * tilt * v; // neighbours tilt opposite ways
+      b.style.transform = `translate(${dx * push * v}px, ${dy * push * v}px) rotate(${turn}deg) scale(${1 + swell * v})`;
+    }));
 }
 
 /**
@@ -92,18 +122,9 @@ function outwardDirections(hero) {
  * @param {{ mood?: 'calm' | 'aggressive' }} [options]
  */
 export function heroChorus({ mood = 'calm' } = {}) {
-  const { follow, swell, push, tilt } = MOODS[mood];
   return heroFigure(`hero-chorus hero-${mood}`, `The talasaman.is image, each bubble moving ${mood === 'calm' ? 'calmly' : 'aggressively'} with its own pitch range`, (hero, isLive) => {
     const { svg, bubbles } = heroSvg(hero);
-    const directions = outwardDirections(hero);
-    const shown = bubbles.map(() => 0);
-    whileLive(isLive, (fn) => onBands(logBands(bubbles.length), fn), (values) =>
-      bubbles.forEach((b, i) => {
-        shown[i] += (values[i] - shown[i]) * follow;
-        const v = shown[i], [dx, dy] = directions[i];
-        const turn = (i % 2 ? 1 : -1) * tilt * v; // neighbours tilt opposite ways
-        b.style.transform = `translate(${dx * push * v}px, ${dy * push * v}px) rotate(${turn}deg) scale(${1 + swell * v})`;
-      }));
+    moveWithBands(bubbles, outwardDirections(hero), isLive, mood);
     return svg;
   });
 }

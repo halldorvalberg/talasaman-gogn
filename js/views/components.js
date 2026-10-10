@@ -14,6 +14,7 @@ import { createLocationZoom } from '../components/location-zoom.js';
 import { radioVisualizer } from '../components/radio-visualizer.js';
 import { logoPulse } from '../components/logo-pulse.js';
 import { heroChorus, heroSpectrum } from '../components/hero-visualisers.js';
+import { chorusZoom } from '../components/chorus-zoom.js';
 import { buildTable } from '../components/table.js';
 
 const FIRST_FLIGHT_DELAY = 700; // ms of all of Iceland before flying to the first venue
@@ -117,13 +118,18 @@ function venuesOf(tables) {
     .sort((a, b) => compareIcelandic(a.name, b.name));
 }
 
-/** The location zoom with a venue picker, a random pick and a way back out. */
-async function zoomDemo() {
+/** The meeting venues and the base map, for the location zoom demos. */
+async function loadVenues() {
   const [base, tables] = await Promise.all([loadJsonOnce('data/iceland.geojson'), loadJsonOnce('data/tables.json')]);
-  const venues = venuesOf(tables);
-  const lens = createLocationZoom(base);
-  const { select, field } = venuePicker(venues, (venue) => lens.showLocation(venue));
+  return { base, venues: venuesOf(tables) };
+}
 
+/**
+ * The controls under a location zoom's heading: a venue picker, Random venue
+ * and All of Iceland. Flies to a random venue shortly after it is shown.
+ */
+function venueControls(venues, lens) {
+  const { select, field } = venuePicker(venues, (venue) => lens.showLocation(venue));
   const pickRandom = () => {
     select.value = Math.floor(Math.random() * venues.length);
     lens.showLocation(venues[select.value]);
@@ -132,9 +138,22 @@ async function zoomDemo() {
   random.addEventListener('click', pickRandom);
   const all = el('button', { className: 'demo-button' }, 'All of Iceland');
   all.addEventListener('click', () => lens.showAll());
-
   setTimeout(pickRandom, FIRST_FLIGHT_DELAY);
-  return [el('div', { className: 'demo-controls' }, field, random, all), lens.element];
+  return el('div', { className: 'demo-controls' }, field, random, all);
+}
+
+/** The location zoom with a venue picker, a random pick and a way back out. */
+async function zoomDemo() {
+  const { base, venues } = await loadVenues();
+  const lens = createLocationZoom(base);
+  return [venueControls(venues, lens), lens.element];
+}
+
+/** The location zoom in the middle of the talasaman.is image's bubbles, which move with the recording. */
+async function chorusZoomDemo() {
+  const { base, venues } = await loadVenues();
+  const chorus = chorusZoom(base);
+  return [venueControls(venues, chorus), chorus.element];
 }
 
 /** The summaries as a filterable table (topic and location dropdowns, text search). */
@@ -179,8 +198,11 @@ function imageGroup() {
 
 const mapsGroup = () => group('Maps',
   demo('Location zoom',
-    'A round lens that flies from all of Iceland into a venue where the tables met, and the pin wiggles as it lands. Pick another venue to hop over to it.',
-    zoomDemo));
+    'A round lens that flies from all of Iceland into a venue where the tables met; the pin wiggles as it lands and the venue is named under it. Pick another venue to hop over to it.',
+    zoomDemo),
+  demo('Location zoom in the chorus',
+    `The same lens where the front-page image's lettering was, ringed by its eleven bubbles: they breathe while all is quiet and swell with their own pitch range while a recording plays. ${PLAY_FIRST}`,
+    chorusZoomDemo));
 
 const dataGroup = (clip) => group('Data',
   demo('Table with filters',

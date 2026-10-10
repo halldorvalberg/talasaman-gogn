@@ -63,6 +63,12 @@
   --ice: #fffdf9;         /* canvas — glaciers read as the whitest thing */
   --ice-line: #d9c6ab;
   --water: color-mix(in oklab, var(--accent-1) 45%, var(--bg));
+
+  /* The location zoom's lens: a line map in the logo's black and white, the
+     same in both themes (like the logo's lettering), with a pin in its blue. */
+  --lens-paper: #fff;          /* land, sea, and the halo round names */
+  --lens-ink: #141a24;         /* ink: coastline, map lines, names */
+  --lens-pin: var(--accent-1); /* blá, the logo blue */
 }
 
 :root[data-theme="dark"] {

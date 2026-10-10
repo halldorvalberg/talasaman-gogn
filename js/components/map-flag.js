@@ -1,6 +1,6 @@
 // The flag: a small card hanging off a pin's head like a pennant, with the
 // pin's name and a line of text (on the Places map, why someone chose the
-// place). One flag per map; used by the Places map and the location zoom.
+// place). One flag per map; used by the Places map.
 
 import { el } from '../lib/dom.js';
 

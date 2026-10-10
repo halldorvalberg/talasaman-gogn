@@ -1,0 +1,132 @@
+/* Summaries › Audio › Link builder: a table of the address's parts, then a
+   form with one checkbox per part and the link it makes. */
+
+/* ---- Parts table -------------------------------------------------------- */
+
+.lb-parts { max-height: none; }
+.lb-parts tbody th {
+  font-size: 0.875rem;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--ink);
+  white-space: nowrap;
+  border-bottom-color: var(--line);
+}
+.lb-parts td:nth-child(2) { min-width: 16rem; max-width: 39em; }
+.link-builder-page code {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.875rem;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+/* ---- Builder form ------------------------------------------------------- */
+
+.link-builder { max-width: 56rem; }
+.lb-parts-list {
+  margin: 0 0 2rem;
+  padding: 0;
+  border: 0;
+}
+.lb-parts-list > legend {
+  margin-bottom: 0.75rem;
+  padding: 0;
+  color: var(--ink-2);
+}
+.lb-part {
+  display: grid;
+  grid-template-columns: minmax(12rem, 16rem) 1fr;
+  align-items: start;
+  gap: 0.5rem 1.5rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--line);
+}
+.lb-part:last-child { border-bottom: 1px solid var(--line); }
+.lb-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.lb-check, .lb-radio input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  flex: none;
+  accent-color: var(--ink);
+  cursor: pointer;
+}
+.lb-control[hidden] { display: none; }
+
+.lb-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.lb-field > label, .lb-radios > legend, .lb-output > label {
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.lb-field .filter { max-width: 32rem; min-height: 44px; }
+.lb-field .lb-time { max-width: 10rem; font-variant-numeric: tabular-nums; }
+.lb-hint { margin: 0; font-size: 0.875rem; color: var(--ink-2); }
+.lb-hint.error { color: var(--error); }
+.filter[aria-invalid="true"] { border-color: var(--error); }
+
+.lb-radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.lb-radios > legend { width: 100%; padding: 0; margin-bottom: 0.35rem; }
+.lb-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+/* ---- Generated link ----------------------------------------------------- */
+
+.lb-output {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.lb-link {
+  min-height: 44px;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+.lb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+.lb-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.4rem 1.4rem;
+  border: 1px solid var(--line-strong);
+  background: none;
+  font: inherit;
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+}
+.lb-button:hover { background: var(--ink); color: var(--bg); }
+.lb-status { margin: 0; font-size: 0.875rem; color: var(--ink-2); }
+
+@media (max-width: 640px) {
+  .lb-part { grid-template-columns: 1fr; }
+}

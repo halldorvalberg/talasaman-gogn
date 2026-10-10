@@ -1,5 +1,7 @@
 // A dataset page: title, intro, the endpoint button and raw-data links. The
-// button loads the endpoint into a collapsible result section below.
+// button loads the endpoint into a collapsible result section below. A page
+// can add extra views of the same data (`extras` in pages.js), each with its
+// own button that shows its view in the same section.
 
 import { el } from '../lib/dom.js';
 import { fetchEndpoint } from '../lib/data.js';
@@ -7,7 +9,7 @@ import { formatNumber, formatTime } from '../lib/format.js';
 import { buildTable } from '../components/table.js';
 import { collapsible } from '../components/collapsible.js';
 import { rawLinks } from '../components/raw-links.js';
-import { childrenOf } from '../pages.js';
+import { subpageLinks } from '../components/subpage-links.js';
 
 /** The result section under the button, created on first load. */
 function resultSection(results) {
@@ -19,15 +21,18 @@ function resultSection(results) {
   return { section, summary: section.querySelector('summary'), body: section.querySelector('.body') };
 }
 
-/** Fetch the page's endpoint and show it (as a visualisation or a table). */
-async function load(page, button, results) {
+/**
+ * Fetch the page's endpoint and show it with `render` (by default the page's
+ * visualisation, or a table).
+ */
+async function load(page, button, results, render = page.render ?? buildTable) {
   button.disabled = true;
   const { section, summary, body } = resultSection(results);
   summary.textContent = 'Loading…';
   section.open = true;
   try {
     const { data, meta } = await fetchEndpoint(page.id);
-    body.replaceChildren(page.render ? await page.render(data) : buildTable(data));
+    body.replaceChildren(await render(data));
     summary.textContent = `${formatNumber(meta.count)} rows · ${formatTime(meta.generatedAt)}`;
   } catch (err) {
     summary.textContent = 'Failed to load';
@@ -37,20 +42,26 @@ async function load(page, button, results) {
   }
 }
 
-/** A dataset page for one endpoint; its data loads when the button is pressed. */
+/** A button that loads the endpoint and shows it with `render`. */
+function loadButton(page, results, [method, label], render) {
+  const button = el('button', { className: 'endpoint' }, el('span', { className: 'method' }, method), label);
+  button.addEventListener('click', () => load(page, button, results, render));
+  return button;
+}
+
+/** A dataset page for one endpoint; its data loads when a button is pressed. */
 export function endpointPage(page) {
   const results = el('div', { className: 'results' });
-  const button = el('button', { className: 'endpoint' },
-    el('span', { className: 'method' }, 'GET'), ` /api/v1/${page.id}`);
-  button.addEventListener('click', () => load(page, button, results));
+  const button = loadButton(page, results, ['GET', ` /api/v1/${page.id}`]);
+  const extras = (page.extras ?? []).map(({ method, label, render }) => loadButton(page, results, [method, label], render));
 
   return el('article', {},
     el('h1', {}, page.title),
     el('p', { className: 'lede' }, page.intro),
-    ...childrenOf(page).map((child) =>
-      el('p', { className: 'subpage-link' }, el('a', { href: `#/${child.id}` }, `${child.title} →`))),
+    ...subpageLinks(page),
     el('div', { className: 'actions' },
       button,
+      ...extras,
       ...rawLinks(page.id)),
     results,
   );

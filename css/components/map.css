@@ -148,20 +148,23 @@
 .flag-close:hover { color: var(--ink); }
 
 /* ---- Location zoom ------------------------------------------------------ */
-/* A round lens onto a places map, as big as the window allows. The flag sits
-   on the square around the lens rather than inside it, so it can hang out
-   over the rim instead of being cut off. */
+/* A round lens onto the map, as big as the window allows: a line map in the
+   logo's black and white whichever the theme, a blue pin, and the place's
+   name written under it with a white halo, so it reads over the coastline.
+   Everything here is scoped to .location-zoom; the Places map keeps its own. */
 
 .location-zoom {
   position: relative;
   width: min(100%, calc(100vh - 8rem), 44rem);
   aspect-ratio: 1;
+  container-type: inline-size; /* label sizes follow the lens (cqi) */
 }
 .location-lens {
   position: absolute;
   inset: 0;
   overflow: hidden;
   border-radius: 50%;
+  background: var(--lens-paper);
   user-select: none;
   -webkit-user-select: none;
 }
@@ -170,6 +173,66 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  box-shadow: inset 0 0 0 1px var(--line-strong);
+  box-shadow: inset 0 0 0 1.5px var(--line-strong); /* the lens's edge against the page, either theme */
   pointer-events: none;
+}
+.location-zoom .basemap .coast { fill: var(--lens-paper); stroke: var(--lens-ink); stroke-width: 1px; }
+.location-zoom .basemap .glacier,
+.location-zoom .basemap .lake,
+.location-zoom .basemap .river { fill: var(--lens-paper); stroke: var(--lens-ink); stroke-width: 0.5px; }
+.location-zoom .basemap .glacier { stroke-dasharray: 2 2; }
+
+.location-zoom .pin-marker { scale: 1.8; cursor: default; }
+.location-zoom .pin-head { background: var(--lens-pin); box-shadow: 0 0 0 1.5px var(--lens-paper); }
+.location-zoom .pin-stem { background: var(--lens-ink); }
+
+/* ---- Location zoom: the name under the pin ------------------------------ */
+
+.lens-label {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: max-content;
+  max-width: 64cqi; /* stays inside the circle below the middle */
+  margin-top: 0.5rem;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  color: var(--lens-ink);
+  text-align: center;
+  text-wrap: balance;
+  pointer-events: none;
+  paint-order: stroke fill; /* the halo goes under the letters, not over them */
+  -webkit-text-stroke: 0.4rem var(--lens-paper);
+  stroke-linejoin: round;
+}
+.lens-label[hidden] { display: none; }
+.lens-label-name {
+  font-size: clamp(1rem, 6cqi, 2.25rem);
+  font-weight: 600;
+  font-variation-settings: "opsz" 72;
+  line-height: 1.1;
+}
+.lens-label-text {
+  margin-top: 0.3em;
+  font-size: clamp(0.8125rem, 3.2cqi, 1.125rem);
+  font-weight: 500;
+  line-height: 1.3;
+  -webkit-text-stroke-width: 0.3rem;
+}
+.lens-label.appear { animation: lens-label-in 0.35s ease-out; }
+@keyframes lens-label-in {
+  from { opacity: 0; translate: 0 0.4rem; }
+}
+
+/* Read out by screen readers, not shown: the label is written on the map. */
+.lens-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

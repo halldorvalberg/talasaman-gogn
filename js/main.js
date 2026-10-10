@@ -1,8 +1,10 @@
 // Entry point: sets up the sidebar and theme, builds the page links and shows
-// the page named in the URL hash (#/places etc.).
+// the page named in the URL hash (#/places etc.). A page may take part of the
+// address for itself (#/listen/7?t=90); while the address stays on that page,
+// the page follows it in place instead of being built again.
 
 import { el } from './lib/dom.js';
-import { PAGES, pageForHash } from './pages.js';
+import { PAGES, pageForHash, ancestorsOf, depthClass } from './pages.js';
 import { setupSidebar, closeSidebarIfNarrow } from './components/sidebar.js';
 import { setupThemeToggle } from './components/theme-toggle.js';
 import { endpointPage } from './views/endpoint.js';
@@ -12,8 +14,13 @@ const nav = document.getElementById('pages');
 const main = document.getElementById('page');
 const crumb = document.getElementById('crumb');
 
+/** What is on screen: its page, the hash it was opened at, and its route hooks. */
+let shown = null;
+
+/** The sidebar links; hidden pages (the full-screen listening view) are left out. */
 function buildNav() {
-  nav.append(...PAGES.map((p) => el('a', { href: `#/${p.id}`, className: p.parent ? 'sub' : '' }, p.title)));
+  nav.append(...PAGES.filter((p) => !p.hidden).map((p) =>
+    el('a', { href: `#/${p.id}`, className: depthClass(p) }, p.title)));
 }
 
 /** Mark the current page's link and set the crumb and document title. */
@@ -24,17 +31,41 @@ function markCurrent(page) {
     if (current) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
   }
-  const parent = PAGES.find((p) => p.id === page.parent);
-  crumb.textContent = parent ? `${parent.title} / ${page.title}` : page.title;
+  crumb.textContent = [...ancestorsOf(page), page].map((p) => p.title).join(' / ');
   document.title = `${page.title} · Talasaman gögn`;
 }
 
-/** Show the page for the current URL hash. */
+/**
+ * What a view is told about its address: the hash, the hash of the page
+ * shown before it (null on the first page of the visit), and hooks to follow
+ * later changes to the address in place and to tidy up when left.
+ */
+function routeContext(hash, from) {
+  const context = { hash, from, change: null, leave: null };
+  context.onChange = (fn) => { context.change = fn; };
+  context.onLeave = (fn) => { context.leave = fn; };
+  return context;
+}
+
+/** Leave the shown page: stop its players and let it tidy up. */
+function leaveShown() {
+  main.querySelectorAll('audio').forEach((audio) => audio.pause());
+  shown?.context.leave?.();
+}
+
+/** Show the page for the current URL hash, or let the shown page follow it. */
 function route() {
   const page = pageForHash(location.hash);
+  if (shown?.page === page && shown.context.change) {
+    shown.context.change(location.hash);
+    return;
+  }
+  leaveShown();
+  const context = routeContext(location.hash, shown?.context.hash ?? null);
+  shown = { page, context };
   markCurrent(page);
   closeSidebarIfNarrow();
-  main.replaceChildren(page.view ? page.view(page, PAGES) : endpointPage(page));
+  main.replaceChildren(page.view ? page.view(page, PAGES, context) : endpointPage(page));
   window.scrollTo(0, 0);
 }
 

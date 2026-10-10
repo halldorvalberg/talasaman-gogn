@@ -81,6 +81,7 @@
   cursor: pointer;
 }
 .radio-play-all:hover { background: var(--ink); color: var(--bg); }
+a.radio-play-all { display: inline-flex; align-items: center; text-decoration: none; }
 .radio-play-all + .radio-play-all { margin-left: 0; }
 .radio-play-all:disabled { cursor: progress; color: var(--ink-3); }
 

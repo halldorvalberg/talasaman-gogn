@@ -1,5 +1,5 @@
-/* The talasaman.is image as audio visualisers: the pulsing logo and the
-   hero image's chorus and spectrum. */
+/* The talasaman.is image as audio visualisers: the pulsing logo, the
+   hero image's chorus and spectrum, and the chorus round a location zoom. */
 
 /* ---- Pulsing logo (logo-pulse.js) -------------------------------------- */
 
@@ -36,3 +36,35 @@ svg.measure { position: absolute; width: 0; height: 0; visibility: hidden; }
   color: var(--ink-2);
 }
 .hero-band { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+/* ---- Chorus zoom (chorus-zoom.js) --------------------------------------- */
+/* The bubbles ring a location zoom (its lens is styled in map.css). The JS
+   sets the figure's shape and where the lens sits in it. Idle bubbles
+   breathe like talasaman.is's own hero; the sound's swell adds on top. */
+
+.chorus-zoom {
+  position: relative;
+  width: min(100%, 46rem);
+  aspect-ratio: var(--ring-aspect, 1);
+}
+.chorus-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.chorus-zoom .location-zoom {
+  position: absolute;
+  left: var(--lens-left, 20%);
+  top: var(--lens-top, 20%);
+  width: var(--lens-size, 60%);
+}
+.chorus-ring .hero-viz-bubble {
+  animation: hero-breathe 6s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i, 0) * -0.55s); /* out of step with each other */
+}
+@keyframes hero-breathe {
+  from { scale: 1; }
+  to { scale: 1.018; }
+}
