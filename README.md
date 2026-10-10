@@ -34,6 +34,17 @@ curl -o raw.geojson "https://gis.lmi.is/geoserver/byggdastofnun/wfs?service=WFS&
 npx mapshaper raw.geojson -filter-fields postnumer,stadur -simplify 6% keep-shapes -clean -o postnumer.geojson precision=0.0001
 ```
 
+### Places base map
+
+`iceland.geojson` comes from LMÍ's IS 50V map data (WFS `IS_50V:*` at gis.lmi.is), simplified with mapshaper. It has four layers, each tagged `kind`:
+
+| kind | Source layer | Filter |
+|---|---|---|
+| `coast` | `strandlina_flakar` | dissolved, islands > 1 km² |
+| `glacier` | `vatnafar_flakar` | `yfirbordsvatn=4`, > 1 km² |
+| `lake` | `vatnafar_flakar` | `yfirbordsvatn=3`, > 2 km² |
+| `river` | `vatnafar_flakar` | `yfirbordsvatn=1` (wide rivers drawn as areas), dissolved, > 1 km² |
+
 ## Accent palette
 
 Categorical colours for future charts, defined as `--accent-1` … `--accent-8` in `style.css`.
@@ -62,3 +73,4 @@ Slots 4–8 (amber, clay, terracotta, teal, gul) are the brand colours as-is. Th
 
 - Gögn: Samtal, félag til almannaheilla (talasaman.is), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 - Póstnúmeramörk: Byggt á gögnum frá Byggðastofnun.
+- Kortagrunnur: IS 50V, Landmælingar Íslands.

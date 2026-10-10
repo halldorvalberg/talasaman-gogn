@@ -10,6 +10,10 @@
   --line-strong: rgba(255, 255, 255, 0.6);
   --map-stroke: rgba(255, 255, 255, 0.45);
   --error: #ff8a80;
+  --water: color-mix(in oklab, var(--accent-1) 75%, var(--bg));
+  --ice: color-mix(in oklab, var(--ink) 24%, var(--bg));
+  --ice-line: color-mix(in oklab, var(--ink) 35%, var(--bg));
+  --pin: var(--accent-2);
   --sidebar-w: 248px;
 
   /* Map: three hue groups (the all-pairs-safe accents 1–3), two shades each.
@@ -441,6 +445,121 @@ td.empty { color: var(--ink-3); }
 .tooltip strong { font-weight: 400; color: var(--ink); }
 
 .table-toggle { margin-top: 3rem; }
+
+/* ---- Places map --------------------------------------------------------- */
+
+.places-stage {
+  position: relative;
+  width: 100%;
+  margin: 1rem 0 2rem;
+}
+.basemap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.basemap path { stroke-linejoin: round; }
+.basemap .coast   { fill: none; stroke: var(--ink); stroke-width: 1px; }
+.basemap .glacier { fill: var(--ice); stroke: var(--ice-line); stroke-width: 0.5px; }
+.basemap .lake,
+.basemap .river   { fill: var(--water); stroke: none; }
+
+.swatch.key-glacier { background: var(--ice); }
+.swatch.key-water   { background: var(--water); }
+.swatch.key-pin     { background: var(--pin); border-radius: 50%; border: 0; width: 9px; height: 9px; }
+
+.pin {
+  position: absolute;
+  width: 14px;
+  height: 22px;
+  margin: -22px 0 0 -7px; /* stem foot sits on the coordinate */
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transform-origin: 50% 100%;
+}
+.pin-head {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pin);
+  box-shadow: 0 0 0 1.5px var(--bg);
+}
+.pin-stem {
+  position: absolute;
+  top: 9px;
+  left: 6.5px;
+  width: 1px;
+  height: 13px;
+  background: var(--ink-2);
+}
+.pin:hover, .pin:focus-visible, .pin.open { z-index: 3; }
+.pin:hover { animation: jiggle 0.45s ease-in-out; }
+.pin:focus-visible { outline: none; }
+.pin:focus-visible .pin-head, .pin.open .pin-head { box-shadow: 0 0 0 1.5px var(--bg), 0 0 0 3px var(--ink); }
+
+@keyframes jiggle {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-14deg); }
+  40% { transform: rotate(11deg); }
+  60% { transform: rotate(-7deg); }
+  80% { transform: rotate(3deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pin:hover { animation: none; }
+}
+
+/* The flag hangs off the pin head like a pennant on a pole. */
+.flag {
+  position: absolute;
+  z-index: 4;
+  width: min(300px, 70vw);
+  margin: -22px 0 0 0;
+  transform: translate(10px, 0);
+  padding: 1rem 1.1rem 1.1rem;
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  border-left: 2px solid var(--pin);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.flag::before { /* hairline back to the pin head */
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: -12px;
+  width: 10px;
+  height: 1px;
+  background: var(--ink-2);
+}
+.flag.flip-x { transform: translate(calc(-100% - 10px), 0); border-left-width: 1px; border-right: 2px solid var(--pin); }
+.flag.flip-x::before { left: auto; right: -12px; }
+.flag.flip-y { margin-top: 0; }
+.flag h3 {
+  margin: 0 1.5rem 0.4rem 0;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+.flag p { margin: 0; color: var(--ink-2); max-height: 14rem; overflow: auto; }
+.flag-close {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.5rem;
+  font: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--ink-3);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.flag-close:hover { color: var(--ink); }
 
 /* ---- Small screens ------------------------------------------------------ */
 

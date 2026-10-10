@@ -1,4 +1,5 @@
 import { renderCirclesMap } from './map.js';
+import { renderPlacesMap } from './places.js';
 
 const API = 'https://talasaman.is/api/v1';
 
@@ -17,6 +18,7 @@ const PAGES = [
     id: 'places',
     title: 'Places',
     intro: 'Favourite places in Iceland and why people chose them. Coordinates are rounded to about 1 km, and no names are included.',
+    render: renderPlacesMap,
   },
   {
     id: 'islenskast',

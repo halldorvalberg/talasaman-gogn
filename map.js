@@ -26,14 +26,14 @@ function loadGeo() {
   return geoPromise;
 }
 
-const project = ([lon, lat]) => [lon * COS_LAT, -lat];
+export const project = ([lon, lat]) => [lon * COS_LAT, -lat];
 
 function binIndex(count) {
   if (!count) return -1;
   return BINS.findIndex((b) => count >= b.min && count <= b.max);
 }
 
-function pathFor(geometry) {
+export function pathFor(geometry) {
   const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates;
   let d = '';
   for (const polygon of polygons) {
