@@ -173,7 +173,7 @@ td.empty { color: var(--ink-3); }
   text-transform: none;
   letter-spacing: normal;
   color: var(--ink);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word; /* only words too long for the whole cell break */
 }
 .count-bars th, .count-bars td { vertical-align: middle; }
 .count-bar {
@@ -211,3 +211,21 @@ td.empty { color: var(--ink-3); }
 .audio-debug dl { display: grid; grid-template-columns: auto 1fr; gap: 0.2rem 0.75rem; margin: 0; }
 .audio-debug dt { color: var(--ink-2); }
 .audio-debug dd { margin: 0; overflow-wrap: anywhere; }
+
+/* ---- Radial bar chart (radial-bars.js) ---------------------------------- */
+
+.radial-figure { position: relative; width: min(36rem, 100%); margin: 1.5rem 0 0.5rem; }
+.radial-bars { display: block; width: 100%; height: auto; overflow: visible; }
+.radial-track { fill: none; stroke: var(--line); stroke-width: 14; stroke-linecap: round; }
+.radial-bar { fill: none; stroke: var(--highlight); stroke-width: 14; stroke-linecap: round; transition: opacity 0.15s; }
+.radial-label { font-size: 13px; text-anchor: end; fill: var(--ink); }
+.radial-centre { font-size: 13px; fill: var(--ink-2); }
+.radial-ring { cursor: default; }
+.radial-bars:has(.radial-ring:hover) .radial-ring:not(:hover) .radial-bar { opacity: 0.35; }
+/* The chart scales with its width; on a phone the names are drawn larger
+   (in chart units) so they still read at about 13px. */
+@media (max-width: 600px) {
+  .radial-label { font-size: 21px; }
+  .radial-centre { font-size: 17px; }
+  .count-bars th:first-child { width: 55%; } /* room for whole topic names */
+}

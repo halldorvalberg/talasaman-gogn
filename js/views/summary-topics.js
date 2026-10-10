@@ -1,11 +1,13 @@
 // Summaries › "Topics": which topics the summaries were about and how many
 // summaries each came up in. Tables either picked one of the set topics or
-// wrote their own (`topicChosen` in /summaries), so the two are listed apart,
-// on one scale so their bars compare.
+// wrote their own (`topicChosen` in /summaries). A radial bar chart shows the
+// set topics, most frequent on the outside; tables below list both kinds on
+// one scale so their bars compare (and carry the numbers for screen readers).
 
 import { el } from '../lib/dom.js';
 import { plural, compareIcelandic } from '../lib/format.js';
 import { countBars } from '../components/count-bars.js';
+import { radialBars } from '../components/radial-bars.js';
 
 /**
  * How many summaries each topic has, most first (ties alphabetical).
@@ -34,6 +36,11 @@ export function renderSummaryTopics(rows) {
     el('p', { className: 'caption' },
       `${plural(rows.length, 'summary', 'summaries')} on ${plural(topics.length, 'topic', 'topics')}: ` +
       `${plural(set.length, 'set topic', 'set topics')} the tables could pick, and ${own.length} the tables wrote themselves.`),
+    radialBars(set, {
+      label: `Set topics by number of summaries, most frequent outermost: ${set.map((t) => `${t.name} ${t.count}`).join(', ')}`,
+      centre: own.length ? `+${own.length} own topics` : '',
+      unit: 'summaries',
+    }),
     countBars(set, { caption: 'Set topics', ...HEADINGS }, max),
     own.length ? countBars(own, { caption: 'Topics the tables wrote themselves', ...HEADINGS }, max) : '');
 }
