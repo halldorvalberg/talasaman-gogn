@@ -91,8 +91,8 @@ export async function renderPlacesMap(rows, buildTable) {
   const onMap = rows.filter((r) => inside(box, r));
   const offMap = rows.filter((r) => !inside(box, r));
 
-  // Coordinates are rounded to ~1 km, so several places can share a point.
-  // Fan those out on a small sunflower spiral so each pin stays reachable.
+  // Pin positions as fractions of the stage (0–1). Places sharing a rounded
+  // coordinate get a sunflower-spiral offset (px), used only at full zoom.
   const seen = new Map();
   const pins = onMap
     .map((r) => {
@@ -101,78 +101,281 @@ export async function renderPlacesMap(rows, buildTable) {
       seen.set(key, i + 1);
       const [px, py] = project([r.lng, r.lat]);
       const angle = i * 2.39996; // golden angle
-      const radius = i ? 5 * Math.sqrt(i) : 0; // px
+      const radius = i ? 9 * Math.sqrt(i) : 0;
       return {
         row: r,
-        left: ((px - x0) / w) * 100,
-        top: ((py - y0) / h) * 100,
+        fx: (px - x0) / w,
+        fy: (py - y0) / h,
         dx: Math.cos(angle) * radius,
         dy: Math.sin(angle) * radius,
       };
     })
-    .sort((a, b) => a.top - b.top); // southern pins on top
+    .sort((a, b) => a.fy - b.fy); // southern pins on top
 
   const stage = el('div', { className: 'places-stage' });
   stage.style.aspectRatio = `${w} / ${h}`;
   stage.append(svg);
 
+  // ---- View: zoom k, pan (ux, uy) in stage fractions ----
+  // screen = (k * f + u) * size
+  const MAX_K = 24; // ~20 px between neighbouring 0.01° points
+  const CLUSTER_PX = 18;
+  const view = { k: 1, ux: 0, uy: 0 };
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function clampView(v) {
+    const k = Math.min(MAX_K, Math.max(1, v.k));
+    return {
+      k,
+      ux: Math.min(0, Math.max(1 - k, v.ux)),
+      uy: Math.min(0, Math.max(1 - k, v.uy)),
+    };
+  }
+
+  let anim = 0;
+  function setView(target, animate = false) {
+    const to = clampView(target);
+    cancelAnimationFrame(anim);
+    if (!animate || reduceMotion) { Object.assign(view, to); draw(); return; }
+    // Animate the view's centre and zoom (log space), not the raw pan offsets,
+    // so the point being zoomed into stays on screen the whole way.
+    const centre = (v) => [(0.5 - v.ux) / v.k, (0.5 - v.uy) / v.k];
+    const [fx0, fy0] = centre(view), [fx1, fy1] = centre(to);
+    const k0 = view.k;
+    const t0 = performance.now();
+    const step = (now) => {
+      const t = Math.min(1, (now - t0) / 380);
+      const e = 1 - (1 - t) ** 3;
+      const k = Math.exp(Math.log(k0) + (Math.log(to.k) - Math.log(k0)) * e);
+      const cx = fx0 + (fx1 - fx0) * e, cy = fy0 + (fy1 - fy0) * e;
+      Object.assign(view, clampView({ k, ux: 0.5 - k * cx, uy: 0.5 - k * cy }));
+      draw();
+      if (t < 1) anim = requestAnimationFrame(step);
+    };
+    anim = requestAnimationFrame(step);
+  }
+
+  // Zoom by factor around a point given in stage fractions.
+  function zoomAt(factor, px, py, animate) {
+    const k = Math.min(MAX_K, Math.max(1, view.k * factor));
+    const fx = (px - view.ux) / view.k, fy = (py - view.uy) / view.k;
+    setView({ k, ux: px - k * fx, uy: py - k * fy }, animate);
+  }
+
+  function fitTo(members) {
+    const xs = members.map((p) => p.fx), ys = members.map((p) => p.fy);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    const k = Math.min(MAX_K, 0.7 / Math.max(maxX - minX, 1e-6), 0.7 / Math.max(maxY - minY, 1e-6));
+    setView({ k, ux: 0.5 - k * (minX + maxX) / 2, uy: 0.5 - k * (minY + maxY) / 2 }, true);
+  }
+
+  // ---- Flag ----
   const flag = el('div', { className: 'flag', hidden: true, role: 'dialog' });
-  let openPin = null;
+  let open = null; // { pin, p }
 
   function closeFlag() {
     flag.hidden = true;
-    openPin?.classList.remove('open');
-    openPin?.setAttribute('aria-expanded', 'false');
-    openPin = null;
+    open?.pin.classList.remove('open');
+    open?.pin.setAttribute('aria-expanded', 'false');
+    open = null;
   }
 
   function openFlag(pin, p) {
-    if (openPin === pin) return closeFlag();
+    if (open?.pin === pin) return closeFlag();
     closeFlag();
-    openPin = pin;
+    open = { pin, p };
     pin.classList.add('open');
     pin.setAttribute('aria-expanded', 'true');
-
     const close = el('button', { className: 'flag-close', title: 'Close', ariaLabel: 'Close' }, '×');
     close.addEventListener('click', closeFlag);
-    flag.replaceChildren(
-      close,
-      el('h3', {}, p.row.place),
-      el('p', {}, p.row.reason || '—'),
-    );
-
-    // Hang the flag off the pin head; flip near the right and top edges.
-    flag.classList.toggle('flip-x', p.left > 62);
-    flag.classList.toggle('flip-y', p.top < 35);
-    flag.style.left = `calc(${p.left}% + ${p.dx}px)`;
-    flag.style.top = `calc(${p.top}% + ${p.dy}px)`;
+    flag.replaceChildren(close, el('h3', {}, p.row.place), el('p', {}, p.row.reason || '—'));
     flag.hidden = false;
+    placeFlag();
     close.focus({ preventScroll: true });
   }
 
+  // Hang the flag off the pin head; flip near the right and top edges.
+  function placeFlag() {
+    if (!open) return;
+    if (open.pin.hidden) return closeFlag();
+    const x = parseFloat(open.pin.style.left), y = parseFloat(open.pin.style.top);
+    const { width, height } = stage.getBoundingClientRect();
+    flag.classList.toggle('flip-x', x / width > 0.62);
+    flag.classList.toggle('flip-y', y / height < 0.35);
+    flag.style.left = `${x}px`;
+    flag.style.top = `${y}px`;
+  }
+
+  // ---- Pins and clusters ----
   for (const p of pins) {
     const pin = el('button', { className: 'pin', ariaLabel: p.row.place, title: p.row.place });
     pin.setAttribute('aria-expanded', 'false');
-    pin.style.left = `calc(${p.left}% + ${p.dx}px)`;
-    pin.style.top = `calc(${p.top}% + ${p.dy}px)`;
     pin.append(el('span', { className: 'pin-head' }), el('span', { className: 'pin-stem' }));
     pin.addEventListener('click', (e) => { e.stopPropagation(); openFlag(pin, p); });
+    p.el = pin;
     stage.append(pin);
   }
-  stage.append(flag);
+  const clusterLayer = el('div', { className: 'cluster-layer' });
+  stage.append(clusterLayer, flag);
+
+  function draw() {
+    const { width: W, height: H } = stage.getBoundingClientRect();
+    if (!W) return;
+    const { k, ux, uy } = view;
+
+    // Base map: show just the visible window.
+    svg.setAttribute('viewBox', `${x0 + (-ux / k) * w} ${y0 + (-uy / k) * h} ${w / k} ${h / k}`);
+
+    for (const p of pins) {
+      p.sx = (k * p.fx + ux) * W;
+      p.sy = (k * p.fy + uy) * H;
+      p.cluster = null;
+    }
+
+    // Greedy screen-space clustering; at full zoom everything is shown and
+    // shared coordinates fan out instead.
+    const clusters = [];
+    if (k < MAX_K - 1e-6) {
+      for (const p of pins) {
+        if (p.cluster || p.sx < -40 || p.sy < -40 || p.sx > W + 40 || p.sy > H + 40) continue;
+        const members = [p];
+        for (const q of pins) {
+          if (q === p || q.cluster) continue;
+          if (Math.abs(q.sx - p.sx) < CLUSTER_PX && Math.abs(q.sy - p.sy) < CLUSTER_PX) members.push(q);
+        }
+        if (members.length > 1) {
+          const c = { members };
+          for (const m of members) m.cluster = c;
+          clusters.push(c);
+        }
+      }
+    }
+
+    const fan = k >= MAX_K - 1e-6;
+    for (const p of pins) {
+      const out = p.sx < -20 || p.sy < -20 || p.sx > W + 20 || p.sy > H + 20;
+      p.el.hidden = !!p.cluster || out;
+      p.el.style.left = `${p.sx + (fan ? p.dx : 0)}px`;
+      p.el.style.top = `${p.sy + (fan ? p.dy : 0)}px`;
+    }
+
+    clusterLayer.replaceChildren(...clusters.map((c) => {
+      const n = c.members.length;
+      const cx = c.members.reduce((s, m) => s + m.sx, 0) / n;
+      const cy = c.members.reduce((s, m) => s + m.sy, 0) / n;
+      const size = Math.round(20 + 5 * Math.sqrt(n));
+      const b = el('button', {
+        className: 'cluster',
+        title: `${n} places — click to zoom in`,
+        ariaLabel: `${n} places, zoom in`,
+      }, String(n));
+      Object.assign(b.style, { left: `${cx}px`, top: `${cy}px`, width: `${size}px`, height: `${size}px` });
+      b.addEventListener('click', (e) => { e.stopPropagation(); closeFlag(); fitTo(c.members); });
+      return b;
+    }));
+
+    stage.classList.toggle('zoomed', k > 1.001);
+    stage.style.touchAction = k > 1.001 ? 'none' : 'pan-y';
+    resetButton.disabled = k <= 1.001;
+    zoomOutButton.disabled = k <= 1.001;
+    zoomInButton.disabled = k >= MAX_K - 1e-6;
+    placeFlag();
+  }
+
+  // ---- Controls ----
+  const zoomInButton = el('button', { title: 'Zoom in', ariaLabel: 'Zoom in' }, '+');
+  const zoomOutButton = el('button', { title: 'Zoom out', ariaLabel: 'Zoom out' }, '−');
+  const resetButton = el('button', { title: 'Show all of Iceland', ariaLabel: 'Show all of Iceland' }, '⤢');
+  zoomInButton.addEventListener('click', () => zoomAt(2, 0.5, 0.5, true));
+  zoomOutButton.addEventListener('click', () => zoomAt(0.5, 0.5, 0.5, true));
+  resetButton.addEventListener('click', () => setView({ k: 1, ux: 0, uy: 0 }, true));
+  const controls = el('div', { className: 'map-controls' }, zoomInButton, zoomOutButton, resetButton);
+  for (const c of [controls, flag, clusterLayer]) {
+    c.addEventListener('pointerdown', (e) => e.stopPropagation());
+    c.addEventListener('dblclick', (e) => e.stopPropagation());
+  }
+  controls.addEventListener('click', (e) => e.stopPropagation());
+  stage.append(controls);
+
+  // ---- Gestures: drag to pan, pinch / ctrl+wheel / double-click to zoom ----
+  const pointers = new Map();
+  let dragged = false;
+  let pinchStart = null;
+
+  const frac = (e) => {
+    const r = stage.getBoundingClientRect();
+    return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height];
+  };
+
+  stage.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('.pin')) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    dragged = false;
+    if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()];
+      pinchStart = { d: Math.hypot(a.x - b.x, a.y - b.y), k: view.k };
+    }
+  });
+
+  stage.addEventListener('pointermove', (e) => {
+    const prev = pointers.get(e.pointerId);
+    if (!prev) return;
+    const r = stage.getBoundingClientRect();
+    if (pointers.size === 1) {
+      const dx = e.clientX - prev.x, dy = e.clientY - prev.y;
+      if (!dragged && Math.hypot(dx, dy) < 4) return;
+      if (!dragged) { dragged = true; stage.setPointerCapture(e.pointerId); stage.classList.add('dragging'); }
+      setView({ k: view.k, ux: view.ux + dx / r.width, uy: view.uy + dy / r.height });
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    } else if (pointers.size === 2 && pinchStart) {
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const [a, b] = [...pointers.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      const mx = ((a.x + b.x) / 2 - r.left) / r.width, my = ((a.y + b.y) / 2 - r.top) / r.height;
+      zoomAt((pinchStart.k * d / pinchStart.d) / view.k, mx, my, false);
+      dragged = true;
+    }
+  });
+
+  const endPointer = (e) => {
+    pointers.delete(e.pointerId);
+    if (pointers.size < 2) pinchStart = null;
+    if (!pointers.size) stage.classList.remove('dragging');
+  };
+  stage.addEventListener('pointerup', endPointer);
+  stage.addEventListener('pointercancel', endPointer);
+
+  // Plain scrolling keeps scrolling the page; ctrl/⌘ + wheel (and trackpad pinch) zooms.
+  stage.addEventListener('wheel', (e) => {
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    const [px, py] = frac(e);
+    zoomAt(Math.exp(-e.deltaY * 0.01), px, py, false);
+  }, { passive: false });
+
+  stage.addEventListener('dblclick', (e) => {
+    if (e.target.closest('.pin')) return;
+    const [px, py] = frac(e);
+    zoomAt(e.shiftKey ? 0.5 : 2.5, px, py, true);
+  });
 
   flag.addEventListener('click', (e) => e.stopPropagation());
-  stage.addEventListener('click', closeFlag);
+  stage.addEventListener('click', () => { if (!dragged) closeFlag(); });
   stage.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFlag(); });
+
+  new ResizeObserver(() => draw()).observe(stage);
 
   // ---- Around the map ----
   const caption = el('p', { className: 'caption' },
-    `${onMap.length} places on the map. Hover a pin to find it, click to read why.`);
+    `${onMap.length} places on the map. Click a numbered group to zoom in on it, then a pin to read why. ` +
+    'Drag to move around; pinch, ctrl + scroll or double-click to zoom.');
 
   const legend = el('div', { className: 'legend' },
     el('span', {}, el('span', { className: 'swatch key-glacier' }), 'Glacier'),
     el('span', {}, el('span', { className: 'swatch key-water' }), 'Lakes and rivers'),
-    el('span', {}, el('span', { className: 'swatch key-pin' }), 'Place'));
+    el('span', {}, el('span', { className: 'swatch key-pin' }), 'Place'),
+    el('span', {}, el('span', { className: 'swatch key-cluster' }, '3'), 'Group of places'));
 
   const root = el('div', { className: 'viz' }, caption, legend, stage);
 

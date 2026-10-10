@@ -450,7 +450,61 @@ td.empty { color: var(--ink-3); }
   position: relative;
   width: 100%;
   margin: 1rem 0 2rem;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
 }
+.places-stage.zoomed { cursor: grab; outline: 1px solid var(--line); }
+.places-stage.dragging { cursor: grabbing; }
+.places-stage.dragging .pin { pointer-events: none; }
+
+.cluster-layer { position: absolute; inset: 0; pointer-events: none; }
+.cluster {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--pin);
+  color: #ffffef;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px color-mix(in oklab, var(--pin) 45%, transparent);
+  cursor: zoom-in;
+  transition: transform 0.15s ease;
+}
+.cluster:hover, .cluster:focus-visible { transform: translate(-50%, -50%) scale(1.12); outline: none; }
+
+.map-controls {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+}
+.map-controls button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.map-controls button + button { border-top: 1px solid var(--line); }
+.map-controls button:hover:not(:disabled) { background: var(--ink); color: var(--bg); }
+.map-controls button:disabled { color: var(--ink-3); opacity: 0.5; cursor: default; }
 .basemap {
   position: absolute;
   inset: 0;
@@ -466,6 +520,11 @@ td.empty { color: var(--ink-3); }
 .swatch.key-glacier { background: var(--ice); }
 .swatch.key-land    { background: var(--land); }
 .swatch.key-water   { background: var(--water); }
+.swatch.key-cluster {
+  width: 16px; height: 16px; border: 0; border-radius: 50%;
+  background: var(--pin); color: #ffffef;
+  display: inline-grid; place-items: center; font-size: 0.6rem;
+}
 .swatch.key-pin     { background: var(--pin); border-radius: 50%; border: 0; width: 9px; height: 9px; }
 
 .pin {
