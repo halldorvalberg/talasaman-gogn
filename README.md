@@ -5,7 +5,7 @@ Each button calls one endpoint and shows the JSON `data` array as a table you ca
 
 ## Run
 
-No build step. Open `index.html` directly, or serve the folder:
+No build step, but it uses ES modules and fetches `postnumer.geojson`, so serve the folder rather than opening the file directly:
 
 ```bash
 python3 -m http.server 8000
@@ -24,6 +24,34 @@ python3 -m http.server 8000
 
 CORS is open, and the limit is 120 requests/min per IP.
 
+## Map data
+
+`postnumer.geojson` is the póstnúmer polygon layer from Byggðastofnun/LMÍ
+(WFS `byggdastofnun:postnumer` at gis.lmi.is), simplified with mapshaper:
+
+```bash
+curl -o raw.geojson "https://gis.lmi.is/geoserver/byggdastofnun/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=byggdastofnun:postnumer&outputFormat=application/json&srsName=EPSG:4326"
+npx mapshaper raw.geojson -filter-fields postnumer,stadur -simplify 6% keep-shapes -clean -o postnumer.geojson precision=0.0001
+```
+
+## Accent palette
+
+Categorical colours for future charts, defined as `--accent-1` … `--accent-8` in `style.css`.
+Use them in order. They were checked against the black background for even brightness, saturation and colour-blind contrast.
+For maps and scatter plots, where every colour can sit next to every other, use only the first three.
+
+| | Name | Hex |
+|---|---|---|
+| 1 | Fjörður (fjord blue) | `#4f86c6` |
+| 2 | Okkur (ochre) | `#b8822a` |
+| 3 | Jökullón (glacier teal) | `#00978a` |
+| 4 | Leir (clay) | `#cc5f45` |
+| 5 | Lúpína (lupine) | `#8f7ad6` |
+| 6 | Mosi (moss) | `#6a9a48` |
+| 7 | Blóðberg (wild thyme) | `#c45c8c` |
+| 8 | Sina (dry grass) | `#9c8f22` |
+
 ## Licence
 
-Gögn: Samtal, félag til almannaheilla (talasaman.is), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+- Gögn: Samtal, félag til almannaheilla (talasaman.is), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+- Póstnúmeramörk: Byggt á gögnum frá Byggðastofnun.

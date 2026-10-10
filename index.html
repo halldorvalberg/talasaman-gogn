@@ -7,20 +7,34 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>Talasaman gögn</h1>
-    <p>Open data from <a href="https://talasaman.is/gogn">talasaman.is/gogn</a>. Click an endpoint to load it as a table.</p>
-  </header>
+  <aside id="sidebar">
+    <div class="brand">
+      <span class="brand-mark"></span>
+      <span>Talasaman gögn</span>
+    </div>
+    <nav id="pages"></nav>
+    <p class="sidebar-foot">
+      Data: <a href="https://talasaman.is/gogn">talasaman.is</a><br>
+      <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+    </p>
+  </aside>
 
-  <nav id="endpoints"></nav>
+  <div id="shell">
+    <header class="topbar">
+      <button id="toggle-sidebar" aria-controls="sidebar" aria-expanded="true" title="Toggle sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <span id="crumb"></span>
+    </header>
 
-  <main id="results"></main>
+    <main id="page"></main>
 
-  <footer>
-    Gögn: Samtal, félag til almannaheilla (talasaman.is),
-    <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
-  </footer>
+    <footer>
+      Gögn: Samtal, félag til almannaheilla (talasaman.is),
+      <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+    </footer>
+  </div>
 
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
