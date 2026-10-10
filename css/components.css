@@ -216,9 +216,16 @@ td.empty { color: var(--ink-3); }
 
 .radial-figure { position: relative; width: min(36rem, 100%); margin: 1.5rem 0 0.5rem; }
 .radial-bars { display: block; width: 100%; height: auto; overflow: visible; }
-.radial-track { fill: none; stroke: var(--line); stroke-width: 14; stroke-linecap: round; }
 .radial-bar { fill: none; stroke: var(--highlight); stroke-width: 14; stroke-linecap: round; transition: opacity 0.15s; }
-.radial-label { font-size: 13px; text-anchor: end; fill: var(--ink); }
+.radial-label {
+  font-size: 13px;
+  text-anchor: end;
+  fill: var(--ink);
+  stroke: var(--bg); /* a halo in the page colour, so names read over bar ends */
+  stroke-width: 5px;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
 .radial-centre { font-size: 13px; fill: var(--ink-2); }
 .radial-ring { cursor: default; }
 .radial-bars:has(.radial-ring:hover) .radial-ring:not(:hover) .radial-bar { opacity: 0.35; }

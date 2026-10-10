@@ -1,7 +1,7 @@
 // A radial bar chart: one ring per item, the largest on the outside, each
-// an arc whose length is its share of the largest (a full share sweeps three
-// quarters of the circle, clockwise from twelve o'clock). The names sit in
-// the free top-left quarter, at the start of their ring. A tooltip names the
+// an arc whose length is its share of the largest (the largest sweeps 95% of
+// the circle, clockwise from twelve o'clock). The names sit at the start of
+// their ring, outlined in the page colour so they read over the bar ends. A tooltip names the
 // hovered ring; a table elsewhere on the page carries the same numbers for
 // screen readers, so the chart itself is one labelled image.
 
@@ -9,7 +9,7 @@ import { svgEl } from '../lib/dom.js';
 import { formatNumber } from '../lib/format.js';
 import { createTooltip } from './tooltip.js';
 
-const SWEEP = 270;   // degrees a full share sweeps
+const SWEEP = 342;   // degrees the largest sweeps: 95% of the circle
 const RING = 22;     // distance between ring centres (chart units)
 const THICKNESS = 14; // stroke width of a ring
 const HOLE = 70;     // radius of the empty middle
@@ -31,12 +31,11 @@ export function arcPath(r, angle) {
 /** Ring radius for item i (0 = largest, outermost) of n. */
 const radiusOf = (i, n) => HOLE + (n - i - 0.5) * RING;
 
-/** One ring: its faint track, the bar, and the name at its start. */
+/** One ring: the bar, and the name at its start. */
 function ring({ name, count }, i, n, max) {
   const r = radiusOf(i, n);
   const bar = svgEl('path', { d: arcPath(r, (SWEEP * count) / max), class: 'radial-bar' });
   return svgEl('g', { class: 'radial-ring' },
-    svgEl('path', { d: arcPath(r, SWEEP), class: 'radial-track' }),
     bar,
     svgEl('text', { x: -LABEL_GAP, y: -r, class: 'radial-label', 'dominant-baseline': 'middle' },
       `${name} · ${formatNumber(count)}`));

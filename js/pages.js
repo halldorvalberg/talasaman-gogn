@@ -13,6 +13,7 @@ import { audioPage } from './views/audio.js';
 import { componentsPage } from './views/components.js';
 import { listenPage } from './views/listen.js';
 import { linkBuilderPage } from './views/link-builder.js';
+import { summaryGroupsPage } from './views/summary-groups/index.js';
 import { splitHash } from './lib/hash.js';
 import { LISTEN_ID } from './lib/listen-address.js';
 
@@ -63,6 +64,13 @@ export const PAGES = [
     parent: 'summaries/audio',
     intro: 'Build a link that opens the full-screen listening view just the way you want it: at a chosen recording and time, only some topics or locations, with a Radio sound setting and either chorus.',
     view: linkBuilderPage,
+  },
+  {
+    id: 'summaries/groups',
+    title: 'Groups',
+    parent: 'summaries',
+    intro: 'What the tables said, grouped by meaning: within each topic, summaries that said similar things are put together, and each is placed on a scale from critical to positive. Our own approximate analysis with a sentence-comparison model; only the texts are used, never where they came from.',
+    view: summaryGroupsPage,
   },
   {
     id: 'stats',

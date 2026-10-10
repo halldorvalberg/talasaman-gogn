@@ -51,8 +51,9 @@ js/
     overview.js, endpoint.js, audio.js, listen.js, link-builder.js, components.js
     circles/            postcode map, tables map + its layout
     places/             map stage, grouping, gestures, list, off-map places
-data/                   map polygons and the tables snapshot
-scripts/                update-tables.py
+    summary-groups/     Summaries › Groups: map of meaning, tone across topics, group gallery
+data/                   map polygons, the tables snapshot and the summary groups
+scripts/                update-tables.py, update-summary-groups.py
 ```
 
 Pure calculations, such as zoom maths, grouping and layout, live in their own modules with no DOM code.
@@ -65,6 +66,7 @@ Pure calculations, such as zoom maths, grouping and layout, live in their own mo
 | `data/postnumer.geojson` | Postcode areas, from Byggðastofnun via LMÍ (WFS `byggdastofnun:postnumer`) |
 | `data/iceland.geojson` | Coastline, glaciers, lakes and wide rivers, from LMÍ IS 50V |
 | `data/tables.json` | Event locations and their tables, from talasaman.is/hringir |
+| `data/summary-groups.json` | Summaries grouped by meaning, with tone and map positions (no locations) |
 
 <details>
 <summary>How the map files were made</summary>
@@ -96,6 +98,14 @@ npx mapshaper raw.geojson -filter-fields postnumer,stadur -simplify 6% keep-shap
 
 ```bash
 python3 scripts/update-tables.py
+```
+
+**Summary groups.** `scripts/update-summary-groups.py` groups the summaries by what was said, for Summaries › Groups. It uses the LaBSE sentence-embedding model and classic statistics only, no text-generating AI: tone is a projection on a positive↔critical axis from example sentences, taken out before average-linkage clustering per topic; keywords are TF-IDF of BÍN lemmas (Miðeind's `islenska`); the map is a PCA. It reads only id, topic and text: location, postcode and table are never stored. The model and Python environment live in the git-ignored `.venv/`.
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install --extra-index-url https://download.pytorch.org/whl/cpu torch sentence-transformers scikit-learn islenska
+HF_HOME=.venv/hf .venv/bin/python scripts/update-summary-groups.py --report
 ```
 
 ## Themes and colours
