@@ -1,6 +1,7 @@
 /* Typography, links, focus and motion — the defaults every page builds on.
    Readability floor: 16 px body at weight 400, nothing below 13 px
-   (0.8125rem), line height 1.5+, thin weights only at 24 px and up. */
+   (0.8125rem), line height 1.5+, thin weights only at 24 px and up, and
+   running text no wider than about 75 characters (max-width: 39em). */
 
 * { box-sizing: border-box; }
 
@@ -41,7 +42,7 @@ h2 {
   color: var(--ink-2);
   font-size: 1.05rem;
 }
-.caption { color: var(--ink-3); font-size: 0.875rem; max-width: 46rem; }
+.caption { color: var(--ink-3); font-size: 0.875rem; max-width: 39em; }
 .error { color: var(--error); }
 
 /* Every interactive element shows where keyboard focus is. */

@@ -11,7 +11,9 @@ const FIT_MARGIN = 0.7; // a fitted group fills 70% of the stage
 const HOP_FIT = 0.6; // at the top of a hop, both ends of a flight fit in 60% of the stage
 
 const EPSILON = 1e-3;
+/** Is the view closer in than all of Iceland? */
 export const isZoomedIn = (v) => v.k > 1 + EPSILON;
+/** Is the view as far in as it goes? */
 export const isAtMaxZoom = (v) => v.k >= MAX_ZOOM - EPSILON;
 
 /** Keep zoom within limits and the map covering the whole stage. */

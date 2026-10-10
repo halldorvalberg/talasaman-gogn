@@ -151,7 +151,7 @@
 .offmap-why { color: var(--ink-3); text-align: right; }
 .offmap-list details p {
   margin: 0 0 1rem 2.5rem;
-  max-width: 40rem;
+  max-width: 39em;
   font-size: 0.875rem;
   color: var(--ink-2);
 }

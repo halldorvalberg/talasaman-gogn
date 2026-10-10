@@ -20,7 +20,7 @@
 .demo h3 { margin: 2.5rem 0 1rem; font-size: 1.25rem; font-weight: 500; }
 .logo-stage { display: flex; justify-content: center; padding: 3rem 0; }
 .logo-large { width: 9rem; height: 9rem; }
-.demo-note { max-width: 46rem; margin: -0.75rem 0 1.5rem; color: var(--ink-2); }
+.demo-note { max-width: 39em; margin: -0.75rem 0 1.5rem; color: var(--ink-2); }
 .demo-caption { margin: 0 0 0.5rem; font-size: 0.875rem; color: var(--ink-3); }
 .demo-caption::first-letter { text-transform: uppercase; }
 
@@ -57,7 +57,6 @@
   transition: background 0.15s, color 0.15s;
 }
 .demo-button:hover { background: var(--ink); color: var(--bg); }
-.play-button { flex: none; min-width: 7rem; }
 
 /* ---- Place picker ------------------------------------------------------- */
 

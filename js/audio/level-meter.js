@@ -32,6 +32,7 @@ function readLevel() {
   return clamp01((db - FLOOR_DB) / (CEIL_DB - FLOOR_DB));
 }
 
+/** One animation frame: update the level, spot onsets and tell every subscriber. */
 function frame(now) {
   const target = readLevel();
   level += (target - level) * (target > level ? ATTACK : RELEASE);
@@ -46,6 +47,7 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
+/** Start the shared loop once, as soon as the radio chain has its analysers. */
 function start() {
   if (running) return;
   running = true;

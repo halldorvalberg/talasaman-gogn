@@ -145,6 +145,7 @@ async function tableDemo(clip) {
 
 const PLAY_FIRST = 'Press Play in the player above to see it move.';
 
+/** Audio demos; they follow the shared recording `clip`. */
 function audioGroup(clip) {
   return group('Audio',
     demo('Progress line',
@@ -159,6 +160,7 @@ function audioGroup(clip) {
       () => [radioVisualizer()]));
 }
 
+/** Visualisers made from the talasaman.is logo and front-page image. */
 function imageGroup() {
   return group('The talasaman.is image',
     demo('Pulsing logo',
@@ -185,6 +187,7 @@ const dataGroup = (clip) => group('Data',
     'Any endpoint\'s rows as a table: a dropdown for columns with few values, a text search for free text. Here, the summaries.',
     () => tableDemo(clip)));
 
+/** The Components page; one recording is fetched and shared by every audio demo. */
 export function componentsPage(page) {
   const clip = loadClip();
   return el('article', { className: 'playground' },

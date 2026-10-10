@@ -5,6 +5,7 @@ import { el } from '../lib/dom.js';
 
 const OFFSET = 14; // px from the pointer, down and to the right
 
+/** A hidden tooltip; returns its `element` and show(event, title, detail) / hide(). */
 export function createTooltip() {
   const box = el('div', { className: 'tooltip', hidden: true });
 

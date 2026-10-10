@@ -6,6 +6,7 @@ import { tableToggle } from '../../components/table.js';
 import { renderPostcodeMap } from './postcode-map.js';
 import { renderTablesMap } from './tables-map.js';
 
+/** The Circles page's visualisation of the /circles rows. */
 export async function renderCircles(rows) {
   const [postcodes, tables] = await Promise.all([renderPostcodeMap(rows), renderTablesMap()]);
   return el('div', {}, postcodes, tables, tableToggle(rows));

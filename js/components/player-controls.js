@@ -28,7 +28,7 @@ export const audioPlayback = (audio) => ({
 /** Fill a button with what `look` gives for the current state. */
 function showLook(button, { icon, text, label }) {
   const iconSpan = el('span', { className: 'play-icon', ariaHidden: 'true' }, icon);
-  if (text) button.replaceChildren(iconSpan, text);
+  if (text) button.replaceChildren(iconSpan, ' ', text); // the space only shows outside flex layouts
   else button.replaceChildren(icon);
   button.ariaLabel = label;
   if (!text) button.title = label;

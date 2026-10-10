@@ -35,18 +35,19 @@ css/
   tokens.css            every colour, for both themes
   base.css              type, links, focus, reduced motion
   layout.css            sidebar, top bar, main column
-  components.css        buttons, fold-outs, tables, legend, tooltip, zoom controls
+  components.css        buttons, fold-outs, tables, legend, tooltip
+  components/           player, map (base map, pins, flag, zoom controls, lens), talasaman.is image, listening view
   views/                one file per page
 js/
   main.js               start-up and routing (#/places …)
   pages.js              the page list
-  lib/                  dom, geo (projection, boxes), data (fetching), format, playback (following an <audio>)
+  lib/                  dom, geo (projection, boxes), map-view (zoom maths), map-pins, motion (tween, reduced motion), math, data (fetching), format, playback (following an <audio>)
   audio/                radio sound: the Web Audio chain, presets, controller, noise-reduction and expander worklets
-  components/           table + filters, audio player, radio controls + visualiser, progress line, waveform bars, location zoom, collapsible, tooltip, legend, sidebar, theme toggle
+  components/           table + filters, audio player, player controls, play all, listening view, radio controls + visualiser, progress line, waveform bars, base map, map pin + flag, location zoom, collapsible, tooltip, legend, raw links, sidebar, theme toggle
   views/
     overview.js, endpoint.js, audio.js, components.js
     circles/            postcode map, tables map + its layout
-    places/             base map, map stage, pins, zoom maths, grouping, gestures, flag, list
+    places/             map stage, grouping, gestures, list, off-map places
 data/                   map polygons and the tables snapshot
 scripts/                update-tables.py
 ```

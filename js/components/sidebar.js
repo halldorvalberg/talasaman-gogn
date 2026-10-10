@@ -9,6 +9,7 @@ function setOpen(open) {
   toggle.setAttribute('aria-expanded', String(open));
 }
 
+/** Open or close the sidebar to start with, and wire up its toggle. */
 export function setupSidebar() {
   setOpen(!narrow.matches && localStorage.getItem('sidebar') !== 'closed');
   toggle.addEventListener('click', () => {

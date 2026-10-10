@@ -79,6 +79,7 @@ function attachHover(stage, tooltip) {
   });
 }
 
+/** The caption above the map: totals, and how to read it. */
 function summary(nodes) {
   const tables = nodes.reduce((sum, n) => sum + n.tables.length, 0);
   const seated = nodes.reduce((sum, n) => sum + n.people, 0);
@@ -87,6 +88,7 @@ function summary(nodes) {
     'Where locations crowd together they are pushed apart; a dotted line leads back to the real spot.';
 }
 
+/** The locations-and-tables map, from data/tables.json. */
 export async function renderTablesMap() {
   const [base, data] = await Promise.all([loadJsonOnce('data/iceland.geojson'), loadJsonOnce('data/tables.json')]);
   const frame = frameOf(mapBox(base));

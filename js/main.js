@@ -29,6 +29,7 @@ function markCurrent(page) {
   document.title = `${page.title} · Talasaman gögn`;
 }
 
+/** Show the page for the current URL hash. */
 function route() {
   const page = pageForHash(location.hash);
   markCurrent(page);

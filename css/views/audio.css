@@ -130,11 +130,10 @@
   cursor: pointer;
 }
 .radio-stage[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-.radio-stage:disabled { cursor: not-allowed; }
-.radio-stage:disabled { border-style: dashed; }
+.radio-stage:disabled { cursor: not-allowed; border-style: dashed; }
 .radio-stage[aria-pressed="true"]:disabled { background: var(--ink-3); border-color: var(--ink-3); }
 
-.radio-hint { margin: 1rem 0 0; font-size: 0.875rem; color: var(--ink-3); max-width: 46rem; }
+.radio-hint { margin: 1rem 0 0; font-size: 0.875rem; color: var(--ink-3); max-width: 39em; }
 
 /* ---- Before/after visualiser ------------------------------------------- */
 

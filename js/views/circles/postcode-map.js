@@ -103,6 +103,7 @@ function caption(byCode, areas) {
   return el('p', { className: 'caption' }, text);
 }
 
+/** The choropleth of members per postcode, from the circles rows. */
 export async function renderPostcodeMap(rows) {
   const geo = await loadJsonOnce('data/postnumer.geojson');
   const byCode = postcodeRows(rows);

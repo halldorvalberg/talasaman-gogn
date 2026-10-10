@@ -8,6 +8,7 @@ function applyTheme(theme, buttons) {
   for (const b of buttons) b.setAttribute('aria-pressed', String(b.dataset.themeChoice === theme));
 }
 
+/** Wire up the theme buttons in the sidebar. */
 export function setupThemeToggle() {
   const buttons = document.querySelectorAll('[data-theme-choice]');
   applyTheme(document.documentElement.dataset.theme, buttons);

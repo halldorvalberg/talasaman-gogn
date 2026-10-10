@@ -19,6 +19,7 @@ function offMapRow(row) {
   ], el('p', {}, row.reason || '—'));
 }
 
+/** The places that are not on the map, each folding open to its reason. */
 export function offMapList(rows) {
   return el('section', { className: 'offmap-section' },
     el('h2', {}, `Not on the map · ${rows.length}`),

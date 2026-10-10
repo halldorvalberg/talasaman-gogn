@@ -81,6 +81,7 @@ function listeningViewButton(loaded) {
   return button;
 }
 
+/** The Audio page: raw links, the Radio sound panel, then the recordings. */
 export function audioPage(page) {
   const clips = el('div', { className: 'clips-area' }, el('p', { className: 'table-status' }, 'Loading recordings…'));
   const loaded = fillClips(clips);

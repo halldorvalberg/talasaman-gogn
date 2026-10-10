@@ -29,7 +29,7 @@
 .index li:first-child { border-top: 1px solid var(--line); }
 .index a { text-decoration: none; }
 .index a:hover { text-decoration: underline; }
-.index span { color: var(--ink-3); }
+.index span { max-width: 39em; color: var(--ink-3); }
 .index li.sub a { padding-left: 1.25rem; }
 .index li.sub a::before { content: "↳ " / ""; color: var(--ink-3); }
 

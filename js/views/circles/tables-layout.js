@@ -51,6 +51,7 @@ function separate(a, b, seed) {
   b.x += (dx / d) * push; b.y += (dy / d) * push;
 }
 
+/** Keep every graph wholly inside the map. */
 function keepInside(nodes, { width, height }) {
   for (const n of nodes) {
     n.x = Math.min(width - n.radius, Math.max(n.radius, n.x));

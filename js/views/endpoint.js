@@ -37,6 +37,7 @@ async function load(page, button, results) {
   }
 }
 
+/** A dataset page for one endpoint; its data loads when the button is pressed. */
 export function endpointPage(page) {
   const results = el('div', { className: 'results' });
   const button = el('button', { className: 'endpoint' },

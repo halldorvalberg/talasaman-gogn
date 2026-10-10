@@ -27,6 +27,7 @@ function presetWith(base, values = {}) {
   return copy;
 }
 
+/** The saved settings, filled in with defaults; the defaults if none are saved or they can't be read. */
 function loadSettings() {
   const defaults = { on: false, preset: DEFAULT_PRESET, custom: null, stages: Object.fromEntries(STAGES.map((s) => [s.id, true])) };
   try {

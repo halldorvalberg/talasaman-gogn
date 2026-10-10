@@ -35,6 +35,7 @@ function datasetIndex(pages) {
       el('span', {}, firstSentence(p.intro)))));
 }
 
+/** The overview page, with an index of `pages`. */
 export function overviewPage(pages) {
   return el('article', {},
     el('h1', {}, 'Talasaman gögn'),

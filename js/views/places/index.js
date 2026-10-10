@@ -24,6 +24,7 @@ const LEGEND = [
   { swatch: 'key-cluster', label: 'Group of places', mark: '3' },
 ];
 
+/** The Places page's visualisation of the /places rows. */
 export async function renderPlaces(rows) {
   const base = await loadJsonOnce('data/iceland.geojson');
   const box = mapBox(base);

@@ -1,9 +1,13 @@
 /* Player pieces: the play button's icon (player-controls.js), the progress
    line and the waveform bars. */
 
-/* ---- Play button icon --------------------------------------------------- */
+/* ---- Play button (player-controls.js) ---------------------------------- */
 
-.play-icon { width: 1em; font-size: 0.75rem; text-align: center; }
+.play-button { flex: none; min-width: 7rem; }
+
+/* In the demo play buttons the icon is small and fixed-width, so Play and
+   Pause line up; elsewhere ("Play all") it is plain text. */
+.play-button .play-icon { width: 1em; font-size: 0.75rem; text-align: center; }
 
 /* ---- Progress line ------------------------------------------------------ */
 /* --progress (0–1) is set from JS. The rail is inset by the dot's radius so
