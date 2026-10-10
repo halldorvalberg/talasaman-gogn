@@ -1,0 +1,162 @@
+/* The Places page: the zoomable map's stage and numbered groups, the list
+   beside it, and the places that couldn't be mapped. The base map, pins and
+   flag it shares with the location zoom are in css/components/map.css. */
+
+/* ---- Map and list side by side ------------------------------------------ */
+/* The map grows with the page but never gets taller than the window; the
+   list takes whatever width is left. --ratio (w / h) is set from JS. */
+
+.places-layout {
+  display: flex;
+  gap: 1.5rem;
+  margin: 1rem 0 2rem;
+}
+.places-stage {
+  position: relative;
+  flex: none;
+  width: min(72%, calc((100vh - 8rem) * var(--ratio, 1.4)));
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.places-stage.zoomed { cursor: grab; outline: 1px solid var(--line); }
+.places-stage.dragging { cursor: grabbing; }
+.places-stage.dragging .pin { pointer-events: none; }
+
+@media (max-width: 1000px) {
+  .places-layout { flex-direction: column; }
+  .places-stage { width: min(100%, calc((100vh - 6rem) * var(--ratio, 1.4))); }
+  .places-list-wrap { height: 60vh; }
+}
+
+/* ---- Legend keys ------------------------------------------------------- */
+
+.swatch.key-glacier { background: var(--ice); }
+.swatch.key-water   { background: var(--water); }
+.swatch.key-pin     { background: var(--pin); border-radius: 50%; border: 0; width: 10px; height: 10px; }
+.swatch.key-cluster {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--pin-strong);
+  color: var(--on-accent);
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.8125rem;
+}
+
+/* ---- Numbered groups ---------------------------------------------------- */
+
+.cluster-layer { position: absolute; inset: 0; pointer-events: none; }
+.cluster {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--pin-strong);
+  color: var(--on-accent);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 1.5px var(--cluster-ring), 0 0 0 3px var(--bg);
+  cursor: zoom-in;
+  transition: transform 0.15s ease;
+}
+.cluster:hover, .cluster:focus-visible { transform: translate(-50%, -50%) scale(1.12); }
+
+/* ---- List beside the map ------------------------------------------------ */
+
+.places-list-wrap { position: relative; flex: 1; min-width: 16rem; min-height: 0; }
+.places-list-head {
+  position: absolute;
+  inset: 0 0 auto 0;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--line-strong);
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.places-list {
+  position: absolute;
+  inset: 2.2rem 0 0 0;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  scrollbar-width: thin;
+}
+.place-card {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.85rem;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-left: 2px solid transparent;
+  background: none;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.place-name {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+.place-reason {
+  display: -webkit-box;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ink-3);
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.place-card:focus-visible { outline-offset: -2px; }
+.place-card:hover, .place-card:focus-visible, .place-card.active {
+  background: var(--card-hover);
+  border-left-color: var(--highlight);
+}
+.place-card:hover .place-reason,
+.place-card:focus-visible .place-reason,
+.place-card.active .place-reason { color: var(--ink-2); } /* muted text falls below 7:1 on the tint */
+
+/* ---- Not on the map ----------------------------------------------------- */
+
+.offmap-section h2 { margin-top: 2.5rem; }
+.offmap-list { border-top: 1px solid var(--line); }
+.offmap-list details { border-top: 0; }
+.offmap-list summary {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 2fr) minmax(9rem, 1fr) minmax(9rem, 1fr);
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.8rem 0;
+}
+.offmap-list summary::before { width: auto; }
+.offmap-name { color: var(--ink); }
+.offmap-coord { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.offmap-why { color: var(--ink-3); text-align: right; }
+.offmap-list details p {
+  margin: 0 0 1rem 2.5rem;
+  max-width: 40rem;
+  font-size: 0.875rem;
+  color: var(--ink-2);
+}
+
+@media (max-width: 800px) {
+  .offmap-list summary { grid-template-columns: 1.5rem 1fr; }
+  .offmap-coord, .offmap-why { grid-column: 2; text-align: left; }
+}

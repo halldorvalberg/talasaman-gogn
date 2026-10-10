@@ -1,0 +1,211 @@
+/* Summaries › Audio: a filter bar and a grid of recording cards. */
+
+.subpage-link { margin: -1.5rem 0 2.5rem; }
+
+/* ---- Radio sound panel ------------------------------------------------- */
+
+.radio-panel {
+  margin: 0 0 2.5rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--line);
+}
+.radio-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 2rem;
+}
+.radio-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+}
+.radio-switch-track {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 12px;
+  transition: background 0.15s;
+}
+.radio-switch-track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--ink);
+  transition: transform 0.15s, background 0.15s;
+}
+.radio-switch[aria-checked="true"] .radio-switch-track { background: var(--ink); }
+.radio-switch[aria-checked="true"] .radio-switch-track::after { transform: translateX(20px); background: var(--bg); }
+
+.radio-presets {
+  display: inline-flex;
+  border: 1px solid var(--line-strong);
+}
+.radio-preset {
+  min-height: 40px;
+  padding: 0.4rem 1rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+.radio-preset + .radio-preset { border-left: 1px solid var(--line-strong); }
+.radio-preset[aria-checked="true"] { background: var(--ink); color: var(--bg); }
+.radio-preset:disabled { cursor: not-allowed; color: var(--ink-3); }
+.radio-preset[aria-checked="true"]:disabled { background: var(--ink-3); color: var(--bg); }
+
+.radio-play-all {
+  min-height: 40px;
+  margin-left: auto;
+  padding: 0.4rem 1.1rem;
+  border: 1px solid var(--line-strong);
+  background: none;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+.radio-play-all:hover { background: var(--ink); color: var(--bg); }
+.radio-play-all + .radio-play-all { margin-left: 0; }
+.radio-play-all:disabled { cursor: progress; color: var(--ink-3); }
+
+/* One card per stage: its toggle as the heading, then its sliders. */
+.radio-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+.radio-card {
+  margin: 0;
+  padding: 0.75rem 1rem 1rem;
+  border: 1px solid var(--line);
+  min-width: 0;
+}
+.radio-card legend { padding: 0 0.25rem; margin-left: -0.25rem; }
+.radio-card-hint { margin: 0.25rem 0 0.5rem; font-size: 0.8125rem; color: var(--ink-3); }
+.radio-control {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 0 0.5rem;
+  margin-top: 0.6rem;
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+}
+.radio-value { font-variant-numeric: tabular-nums; color: var(--ink); }
+.radio-slider {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 0.25rem 0 0;
+  accent-color: var(--ink);
+  cursor: pointer;
+}
+.radio-slider:disabled { cursor: not-allowed; opacity: 0.6; }
+
+.radio-stage {
+  min-height: 36px;
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 18px;
+  background: none;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+.radio-stage[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.radio-stage:disabled { cursor: not-allowed; }
+.radio-stage:disabled { border-style: dashed; }
+.radio-stage[aria-pressed="true"]:disabled { background: var(--ink-3); border-color: var(--ink-3); }
+
+.radio-hint { margin: 1rem 0 0; font-size: 0.875rem; color: var(--ink-3); max-width: 46rem; }
+
+/* ---- Before/after visualiser ------------------------------------------- */
+
+.radio-viz { margin-top: 1.25rem; }
+.radio-viz .legend { margin: 0 0 0.75rem; }
+.swatch.key-original { background: none; border: 1.5px solid var(--ink-3); }
+.swatch.key-radio { background: var(--key-radio); border-color: var(--highlight); }
+.radio-viz figure { margin: 0 0 1rem; }
+.radio-viz figcaption {
+  margin-bottom: 0.35rem;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.viz-canvas {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--line);
+}
+.viz-level { height: 140px; }
+.viz-spectrum { height: 180px; }
+.viz-waiting { margin: 0; font-size: 0.875rem; color: var(--ink-3); }
+
+/* ---- Filter bar --------------------------------------------------------- */
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 12rem;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.filter-field:last-child { flex: 1; min-width: 16rem; }
+.filter-field .filter { text-transform: none; letter-spacing: normal; }
+
+/* ---- Recording cards ---------------------------------------------------- */
+
+.clips {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+.clip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.5rem 1.25rem;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.clip[hidden] { display: none; }
+.clip-topic {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--ink);
+}
+.clip-topic::first-letter { text-transform: uppercase; }
+.clip-where { margin: 0; font-size: 0.875rem; color: var(--ink-3); }
+.clip .player { width: 100%; margin: 0.4rem 0; }
+.clip-summary { margin: 0; color: var(--ink-2); line-height: 1.6; }

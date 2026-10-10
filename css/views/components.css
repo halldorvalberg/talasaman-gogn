@@ -1,0 +1,86 @@
+/* The Components page: a playground of groups (h2), one section per
+   component in each (h3) with a one-line note and a live demo, and a
+   player bar that stays at the top while scrolling. */
+
+.playground-player {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 2rem 0 0;
+  padding: 0.75rem 0 1rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+.playground-player .demo-player { margin-top: 0.25rem; }
+.playground-group > h2 {
+  margin: 4.5rem 0 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line-strong);
+}
+.demo h3 { margin: 2.5rem 0 1rem; font-size: 1.25rem; font-weight: 500; }
+.logo-stage { display: flex; justify-content: center; padding: 3rem 0; }
+.logo-large { width: 9rem; height: 9rem; }
+.demo-note { max-width: 46rem; margin: -0.75rem 0 1.5rem; color: var(--ink-2); }
+.demo-caption { margin: 0 0 0.5rem; font-size: 0.875rem; color: var(--ink-3); }
+.demo-caption::first-letter { text-transform: uppercase; }
+
+/* ---- Player row and buttons --------------------------------------------- */
+
+.demo-player {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 0.75rem;
+}
+.demo-player .progress-line { flex: 1; }
+.demo-time {
+  min-width: 6.5rem;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+  text-align: right;
+}
+
+.demo-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  padding: 0.5rem 1.1rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.9375rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.demo-button:hover { background: var(--ink); color: var(--bg); }
+.play-button { flex: none; min-width: 7rem; }
+
+/* ---- Place picker ------------------------------------------------------- */
+
+.demo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.demo-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: min(22rem, 100%);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.demo-field .filter { min-height: 44px; font-size: 1rem; text-transform: none; letter-spacing: normal; }
+
+@media (max-width: 800px) {
+  .demo-player { flex-wrap: wrap; }
+  .demo-player .progress-line { flex-basis: 100%; order: -1; }
+}

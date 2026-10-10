@@ -1,0 +1,62 @@
+/* Player pieces: the play button's icon (player-controls.js), the progress
+   line and the waveform bars. */
+
+/* ---- Play button icon --------------------------------------------------- */
+
+.play-icon { width: 1em; font-size: 0.75rem; text-align: center; }
+
+/* ---- Progress line ------------------------------------------------------ */
+/* --progress (0–1) is set from JS. The rail is inset by the dot's radius so
+   the dot stays inside the line at the start and the end. */
+
+.progress-line {
+  position: relative;
+  height: 44px; /* the click target; the line itself is a hairline */
+  cursor: pointer;
+  touch-action: none;
+}
+.progress-rail { position: absolute; inset: 0 7px; }
+.progress-track,
+.progress-played {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 1px;
+  background: var(--ink-3);
+}
+.progress-track { right: 0; }
+.progress-played {
+  width: calc(var(--progress, 0) * 100%);
+  height: 2px;
+  margin-top: -0.5px;
+  background: var(--highlight);
+}
+.progress-dot {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--progress, 0) * 100%);
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: var(--highlight);
+  box-shadow: 0 0 0 2px var(--bg);
+  transition: transform 0.15s ease;
+}
+.progress-line:hover .progress-dot,
+.progress-line:focus-visible .progress-dot,
+.progress-line.dragging .progress-dot { transform: scale(1.3); }
+
+/* ---- Waveform bars ------------------------------------------------------ */
+
+.waveform-bars {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.waveform-bars .bar {
+  stroke: var(--ink);
+  stroke-linecap: round;
+  transition: stroke 0.2s ease;
+}
+.waveform-bars .bar.played { stroke: var(--highlight); }

@@ -1,0 +1,38 @@
+/* The talasaman.is image as audio visualisers: the pulsing logo and the
+   hero image's chorus and spectrum. */
+
+/* ---- Pulsing logo (logo-pulse.js) -------------------------------------- */
+
+.logo-pulse { overflow: visible; flex: none; }
+.logo-bubble,
+.logo-ring { transform-box: fill-box; transform-origin: 50% 45%; }
+.logo-bubble { fill: var(--highlight); }
+.logo-ring { fill: none; stroke: var(--highlight); stroke-width: 3px; vector-effect: non-scaling-stroke; }
+
+/* ---- Visualisers from the talasaman.is image (hero-visualisers.js) ------ */
+
+svg.measure { position: absolute; width: 0; height: 0; visibility: hidden; }
+.hero-viz svg { display: block; width: 100%; height: auto; overflow: visible; }
+.hero-viz-bubble {
+  fill: var(--hero-bubble);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.hero-viz-lettering { fill: var(--on-hero-bubble); pointer-events: none; }
+.hero-chorus { max-width: 34rem; }
+.hero-aggressive { padding: 3rem; } /* room for the bubbles to jolt outward */
+.hero-cells {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: 1rem;
+}
+.hero-cell { margin: 0; }
+.hero-cell svg { aspect-ratio: 1; }
+.hero-cell figcaption {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.35rem;
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+}
+.hero-band { color: var(--ink-3); font-variant-numeric: tabular-nums; }

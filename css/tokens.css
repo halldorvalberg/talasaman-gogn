@@ -1,0 +1,97 @@
+/* Colour tokens for both themes, from talasaman.is's own --color-* values.
+   - light (default): cream canvas, ink text — the site itself.
+   - dark (data-theme="dark"): ink ground, cream text — how the site styles its
+     dark surfaces (code blocks, video panel). talasaman.is has no dark mode of
+     its own; this mirrors its ink/NN opacity scale in cream.
+   The theme follows the browser until the sidebar toggle is used.
+
+   Colours are used only through these properties. Brand colours stay as-is;
+   only derived steps (muted text, error, darker/lighter marks) are tuned so
+   text passes WCAG AAA (7:1) and marks pass 3:1 — check with the /cleancode
+   contrast checker after any change. */
+
+:root {
+  color-scheme: light;
+  --bg: #fffdf9;          /* canvas */
+  --ink: #141a24;         /* ink */
+  --ink-2: #3d3a36;
+  --ink-3: #5e554d;       /* muted, darkened from #6b5f54 for 7:1 */
+  --line: #e3d6c4;        /* line */
+  --line-strong: #141a24;
+  --map-stroke: rgba(20, 26, 36, 0.35);
+  --error: color-mix(in oklab, var(--accent-2) 68%, var(--ink));
+  --on-accent: #ffffef;   /* cream text on a dark accent fill */
+  --scrim: rgba(0, 0, 0, 0.7); /* behind the open sidebar on phones */
+  --sidebar-w: 248px;
+
+  /* Categorical colours, in this order. Slots 1–3 (blá, rauður, grænn) stay
+     distinct even when any two touch; 4–8 need labels or a table. */
+  --accent-1: #2753f5; /* blá        */
+  --accent-2: #d64000; /* rauður     */
+  --accent-3: #1ba672; /* grænn      */
+  --accent-4: #e8a04b; /* amber      */
+  --accent-5: #9e5429; /* clay       */
+  --accent-6: #c8743c; /* terracotta */
+  --accent-7: #2f5d62; /* teal       */
+  --accent-8: #ffc60b; /* gul        */
+
+  /* Marks on the maps */
+  --highlight: var(--accent-1);                               /* hovered pin, location dot */
+  --pin: var(--accent-2);                                     /* rauður */
+  --pin-strong: color-mix(in oklab, var(--pin) 80%, #000);    /* group circles: cream text passes 7:1 */
+  --cluster-ring: var(--pin);                                 /* group circle edge, 3:1 on land */
+  --highlight-halo: color-mix(in oklab, var(--highlight) 35%, transparent); /* soft ring round a highlighted pin */
+
+  /* Surfaces and marks in the UI */
+  --card-hover: color-mix(in oklab, var(--accent-1) 7%, var(--bg));  /* hovered place card */
+  --hero-bubble: var(--highlight);   /* the talasaman.is image's speech bubbles */
+  --on-hero-bubble: var(--on-accent); /* their lettering: large text, 4.5:1 */
+  --key-radio: color-mix(in oklab, var(--highlight) 45%, var(--bg)); /* "Radio sound" legend chip */
+
+  /* Circles map: three hue groups, two shades each; paler = lower bin. */
+  --bin-empty: #fffdf9;
+  --bin-0: color-mix(in oklab, var(--accent-1) 40%, #fff); /* 1–2   */
+  --bin-1: var(--accent-1);                                 /* 3–5   */
+  --bin-2: color-mix(in oklab, var(--accent-3) 40%, #fff); /* 6–10  */
+  --bin-3: var(--accent-3);                                 /* 11–20 */
+  --bin-4: var(--accent-2);                                 /* 21–40 */
+  --bin-5: color-mix(in oklab, var(--accent-2) 65%, #000); /* 41+   */
+
+  /* Base maps: a paper map in the site's earth tones. */
+  --land: #f3e7d6;        /* sand */
+  --coast: #6b5f54;       /* muted */
+  --ice: #fffdf9;         /* canvas — glaciers read as the whitest thing */
+  --ice-line: #d9c6ab;
+  --water: color-mix(in oklab, var(--accent-1) 45%, var(--bg));
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #141a24;                                          /* ink */
+  --ink: #ffffef;                                         /* cream */
+  --ink-2: color-mix(in oklab, #ffffef 80%, #141a24);     /* cream/80 */
+  --ink-3: color-mix(in oklab, #ffffef 65%, #141a24);     /* cream/65, for 7:1 */
+  --line: color-mix(in oklab, #ffffef 14%, #141a24);      /* cream/15 */
+  --line-strong: #ffffef;
+  --map-stroke: rgba(255, 255, 239, 0.3);
+  --error: #e8a04b;                                       /* amber */
+
+  --highlight: color-mix(in oklab, var(--accent-1) 85%, #ffffef); /* blá, lifted to 3:1 on dark land */
+  --cluster-ring: var(--ink);                                       /* dark fill needs a light edge */
+  --hero-bubble: color-mix(in oklab, var(--accent-1) 94%, #ffffef); /* blá, lifted just enough: 3:1 on ink, cream lettering 4.5:1 */
+
+  /* On a dark ground, the lower bin in each group is the darker shade. */
+  --bin-empty: #141a24;
+  --bin-0: color-mix(in oklab, var(--accent-1) 55%, #141a24);
+  --bin-1: var(--accent-1);
+  --bin-2: color-mix(in oklab, var(--accent-3) 55%, #141a24);
+  --bin-3: var(--accent-3);
+  --bin-4: var(--accent-2);
+  --bin-5: color-mix(in oklab, var(--accent-2) 60%, #ffffef);
+
+  --land: color-mix(in oklab, #ffffef 9%, #141a24);
+  --coast: color-mix(in oklab, #ffffef 55%, #141a24);
+  --ice: color-mix(in oklab, #ffffef 85%, #141a24);
+  --ice-line: color-mix(in oklab, #ffffef 60%, #141a24);
+  --water: color-mix(in oklab, var(--accent-1) 70%, #141a24);
+}

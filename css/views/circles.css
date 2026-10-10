@@ -1,0 +1,78 @@
+/* The Circles page: the postcode choropleth and the locations-and-tables map. */
+
+/* ---- Postcode choropleth ------------------------------------------------ */
+
+.maps {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+.maps figure { margin: 0; }
+.maps figcaption {
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 0.75rem;
+}
+.map {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: calc(100vh - 8rem);
+  overflow: hidden;
+}
+.map .area {
+  stroke: var(--map-stroke);
+  stroke-width: 0.5px;
+  stroke-linejoin: round;
+  cursor: crosshair;
+}
+.map .area.hover { stroke: var(--ink); stroke-width: 1.5px; }
+.inset-outline {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1px;
+  stroke-dasharray: 3 3;
+  pointer-events: none;
+}
+
+.empty.area, .swatch.empty { fill: var(--bin-empty); background: var(--bin-empty); }
+.bin-0 { fill: var(--bin-0); background: var(--bin-0); }
+.bin-1 { fill: var(--bin-1); background: var(--bin-1); }
+.bin-2 { fill: var(--bin-2); background: var(--bin-2); }
+.bin-3 { fill: var(--bin-3); background: var(--bin-3); }
+.bin-4 { fill: var(--bin-4); background: var(--bin-4); }
+.bin-5 { fill: var(--bin-5); background: var(--bin-5); }
+
+/* ---- Locations and tables ----------------------------------------------- */
+
+.tables-section h2 { margin-top: 4rem; }
+.tables-stage { position: relative; margin: 1rem 0; }
+.tables-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: calc(100vh - 6rem);
+}
+.tables-map .coast { fill: var(--land); stroke: var(--coast); stroke-width: 0.8px; }
+.tables-map .glacier { fill: var(--ice); stroke: none; }
+.tables-map .leader { stroke: var(--ink-3); stroke-width: 0.75px; stroke-dasharray: 2 2; }
+.tables-map .anchor { fill: var(--ink-2); }
+.tables-map .spoke { stroke: var(--ink-3); stroke-width: 0.6px; opacity: 0.6; }
+.tables-map .loc { fill: var(--highlight); stroke: var(--bg); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.tables-map .table { fill: var(--accent-2); }
+.tables-map .person { fill: var(--ink-2); }
+.tables-map .hit { fill: transparent; }
+.tables-map .tcluster { transition: opacity 0.15s; }
+.tables-stage.focus .tcluster:not(.on) { opacity: 0.25; }
+.tables-map .ttable:hover .table { stroke: var(--ink); stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+
+.swatch.key-loc { background: var(--highlight); border-radius: 50%; border: 0; }
+.swatch.key-table { background: var(--accent-2); border-radius: 50%; border: 0; width: 10px; height: 10px; }
+.swatch.key-person { background: var(--ink-2); border-radius: 50%; border: 0; width: 5px; height: 5px; }
+
+@media (max-width: 800px) {
+  .maps { grid-template-columns: 1fr; }
+}

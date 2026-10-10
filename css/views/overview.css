@@ -1,0 +1,38 @@
+/* The overview page: headline number tiles and the dataset index. */
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+  margin-top: 4rem;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1.5rem 1.25rem;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.tile-value { font-size: 2rem; font-weight: 300; font-variant-numeric: tabular-nums; }
+.tile-label { font-size: 0.875rem; color: var(--ink-3); }
+
+.index { list-style: none; margin: 0; padding: 0; }
+.index li {
+  display: grid;
+  grid-template-columns: 10rem 1fr;
+  gap: 2rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.index li:first-child { border-top: 1px solid var(--line); }
+.index a { text-decoration: none; }
+.index a:hover { text-decoration: underline; }
+.index span { color: var(--ink-3); }
+.index li.sub a { padding-left: 1.25rem; }
+.index li.sub a::before { content: "↳ " / ""; color: var(--ink-3); }
+
+@media (max-width: 800px) {
+  .index li { grid-template-columns: 1fr; gap: 0.25rem; }
+}

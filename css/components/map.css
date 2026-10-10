@@ -1,0 +1,175 @@
+/* The map of Iceland's shared parts (components/basemap.js, map-pin.js,
+   map-flag.js), used by the Places map and the location zoom: base map,
+   zoom controls, pins, the flag, and the round lens of the location zoom. */
+
+/* ---- Base map ----------------------------------------------------------- */
+
+.basemap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.basemap path { stroke-linejoin: round; }
+.basemap .coast   { fill: var(--land); stroke: var(--coast); stroke-width: 1px; }
+.basemap .glacier { fill: var(--ice); stroke: var(--ice-line); stroke-width: 0.5px; }
+.basemap .lake,
+.basemap .river   { fill: var(--water); stroke: none; }
+
+/* ---- Zoom controls ------------------------------------------------------ */
+
+.map-controls {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+}
+.map-controls button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.map-controls button + button { border-top: 1px solid var(--line-strong); }
+.map-controls button:hover:not(:disabled) { background: var(--ink); color: var(--bg); }
+.map-controls button:disabled { color: var(--ink-3); cursor: default; }
+
+/* ---- Pins --------------------------------------------------------------- */
+
+.pin {
+  position: absolute;
+  width: 14px;
+  height: 22px;
+  margin: -22px 0 0 -7px; /* the stem's foot sits on the coordinate */
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transform-origin: 50% 100%;
+}
+.pin-head {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pin);
+  box-shadow: 0 0 0 1.5px var(--bg);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.pin-stem {
+  position: absolute;
+  top: 9px;
+  left: 6.5px;
+  width: 1px;
+  height: 13px;
+  background: var(--ink-2);
+}
+.pin:hover, .pin:focus-visible, .pin.open { z-index: 3; }
+.pin:hover { animation: jiggle 0.45s ease-in-out; }
+.pin:focus-visible { outline-offset: 0; }
+.pin.open .pin-head { box-shadow: 0 0 0 1.5px var(--bg), 0 0 0 3px var(--ink); }
+
+.pin.highlight { z-index: 4; animation: jiggle 0.5s ease-in-out; }
+.pin.wiggle { animation: jiggle 0.6s ease-in-out; } /* on landing, in the location zoom */
+.pin.highlight .pin-head {
+  background: var(--highlight);
+  transform: scale(1.4);
+  box-shadow: 0 0 0 1.5px var(--bg), 0 0 0 4px var(--highlight-halo);
+}
+
+@keyframes jiggle {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-14deg); }
+  40% { transform: rotate(11deg); }
+  60% { transform: rotate(-7deg); }
+  80% { transform: rotate(3deg); }
+}
+
+/* ---- Flag: hangs off the pin head like a pennant on a pole -------------- */
+
+.flag {
+  position: absolute;
+  z-index: 4;
+  width: min(320px, 70vw);
+  margin: -22px 0 0 0;
+  transform: translate(10px, 0);
+  padding: 1rem 1.1rem 1.1rem;
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  border-left: 2px solid var(--pin);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+.flag::before { /* hairline back to the pin head */
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: -12px;
+  width: 10px;
+  height: 1px;
+  background: var(--ink-2);
+}
+.flag.flip-x { transform: translate(calc(-100% - 10px), 0); border-left-width: 1px; border-right: 2px solid var(--pin); }
+.flag.flip-x::before { left: auto; right: -12px; }
+.flag.flip-y { margin-top: 0; }
+.flag h3 {
+  margin: 0 2rem 0.4rem 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+.flag p { margin: 0; color: var(--ink-2); max-height: 14rem; overflow: auto; }
+.flag-close {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  width: 32px;
+  height: 32px;
+  font: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--ink-2);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.flag-close:hover { color: var(--ink); }
+
+/* ---- Location zoom ------------------------------------------------------ */
+/* A round lens onto a places map, as big as the window allows. The flag sits
+   on the square around the lens rather than inside it, so it can hang out
+   over the rim instead of being cut off. */
+
+.location-zoom {
+  position: relative;
+  width: min(100%, calc(100vh - 8rem), 44rem);
+  aspect-ratio: 1;
+}
+.location-lens {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.location-lens::after { /* the rim, drawn over the map */
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  pointer-events: none;
+}

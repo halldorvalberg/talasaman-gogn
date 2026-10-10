@@ -1,88 +1,120 @@
 # talasaman-gogn
 
-A simple static page for browsing the open data API at [talasaman.is/gogn](https://talasaman.is/gogn).
-Each button calls one endpoint and shows the JSON `data` array as a table you can collapse.
+A small site for exploring the open data from [Samtal](https://talasaman.is/gogn), a public conversation project across Iceland.
 
-## Run
+**Live:** https://halldorvalberg.github.io/talasaman-gogn/
 
-No build step, but it uses ES modules and fetches `postnumer.geojson`, so serve the folder rather than opening the file directly:
+There is one page per dataset:
 
-```bash
-python3 -m http.server 8000
-```
-
-## Endpoints
-
-| Endpoint | Contents |
+| Page | What it shows |
 |---|---|
-| `/api/v1/circles` | Ring hierarchy with member counts |
-| `/api/v1/places` | Favourite places + reasons (coords rounded ~1 km) |
-| `/api/v1/islenskast` | "Hvað er íslenskast?" answers, categorised |
-| `/api/v1/topics` | Discussion words by frequency |
-| `/api/v1/summaries` | Table discussion summaries (+ audio where consented) |
-| `/api/v1/stats` | Aggregate metrics |
+| Overview | Headline numbers and an index of the datasets |
+| Circles | Members per postcode on a map. A second map shows each event location with its tables and the people at each table. |
+| Places | Favourite places as pins on a map of Iceland. Groups of pins zoom in when clicked, and a list beside the map flies to each place. |
+| Summaries › Audio | The 24 recorded table discussions, each with a player and the facilitator's summary. Filter by topic or location, or search. An optional **Radio sound** switch cleans up the voices with classic sound processing (no AI): high-pass, spectral noise reduction, adaptive expander, de-esser, EQ, compressors and a limiter. There are three presets: **Natural**, **Clear** (the default) and **Radio**. A before/after view shows the level and spectrum. |
+| Íslenskast, Topics, Summaries, Stats | Tables |
+| Components | A playground of the site's reusable pieces, live on real data, with one player at the top that every audio demo follows. **Audio:** a progress line (click, drag or arrow keys), waveform bars like a Spotify code, and the before/after view. **The talasaman.is image:** the pulsing logo (also in the sidebar title), the front-page image as a calm and an aggressive chorus (each bubble moves with its own pitch range), and the image taken apart into its eleven bubbles. **Maps:** a round lens that flies into the venues where the tables met. **Data:** the filterable table. |
 
-CORS is open, and the limit is 120 requests/min per IP.
+Every page can also show its data as a table. Long tables get a filter under each column: a dropdown for columns with a few repeated values, and a search box for free text.
 
-## Map data
+## Run locally
 
-`postnumer.geojson` is the póstnúmer polygon layer from Byggðastofnun/LMÍ
-(WFS `byggdastofnun:postnumer` at gis.lmi.is), simplified with mapshaper:
+There's no build step. The site uses ES modules and loads files from `data/`, so serve the folder rather than opening `index.html` directly:
 
 ```bash
-curl -o raw.geojson "https://gis.lmi.is/geoserver/byggdastofnun/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=byggdastofnun:postnumer&outputFormat=application/json&srsName=EPSG:4326"
-npx mapshaper raw.geojson -filter-fields postnumer,stadur -simplify 6% keep-shapes -clean -o postnumer.geojson precision=0.0001
+python3 -m http.server 8001   # then open http://localhost:8001
 ```
 
-### Places base map
+Pushing to `main` deploys to GitHub Pages.
 
-`iceland.geojson` comes from LMÍ's IS 50V map data (WFS `IS_50V:*` at gis.lmi.is), simplified with mapshaper. It has four layers, each tagged `kind`:
+## Layout
 
-| kind | Source layer | Filter |
+```
+index.html              page shell; sets the theme before first paint
+css/
+  tokens.css            every colour, for both themes
+  base.css              type, links, focus, reduced motion
+  layout.css            sidebar, top bar, main column
+  components.css        buttons, fold-outs, tables, legend, tooltip, zoom controls
+  views/                one file per page
+js/
+  main.js               start-up and routing (#/places …)
+  pages.js              the page list
+  lib/                  dom, geo (projection, boxes), data (fetching), format, playback (following an <audio>)
+  audio/                radio sound: the Web Audio chain, presets, controller, noise-reduction and expander worklets
+  components/           table + filters, audio player, radio controls + visualiser, progress line, waveform bars, location zoom, collapsible, tooltip, legend, sidebar, theme toggle
+  views/
+    overview.js, endpoint.js, audio.js, components.js
+    circles/            postcode map, tables map + its layout
+    places/             base map, map stage, pins, zoom maths, grouping, gestures, flag, list
+data/                   map polygons and the tables snapshot
+scripts/                update-tables.py
+```
+
+Pure calculations, such as zoom maths, grouping and layout, live in their own modules with no DOM code.
+
+## Data
+
+| Source | Used for |
+|---|---|
+| [talasaman.is open API](https://talasaman.is/gogn) (`/api/v1/*`) | Every page. CORS is open; limit 120 requests/min. |
+| `data/postnumer.geojson` | Postcode areas, from Byggðastofnun via LMÍ (WFS `byggdastofnun:postnumer`) |
+| `data/iceland.geojson` | Coastline, glaciers, lakes and wide rivers, from LMÍ IS 50V |
+| `data/tables.json` | Event locations and their tables, from talasaman.is/hringir |
+
+<details>
+<summary>How the map files were made</summary>
+
+Both map files were simplified with [mapshaper](https://mapshaper.org).
+
+```bash
+# Postcodes
+curl -o raw.geojson "https://gis.lmi.is/geoserver/byggdastofnun/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=byggdastofnun:postnumer&outputFormat=application/json&srsName=EPSG:4326"
+npx mapshaper raw.geojson -filter-fields postnumer,stadur -simplify 6% keep-shapes -clean -o data/postnumer.geojson precision=0.0001
+```
+
+`iceland.geojson` combines four IS 50V layers, each tagged with `kind`:
+
+| kind | Layer | Filter |
 |---|---|---|
 | `coast` | `strandlina_flakar` | dissolved, islands > 1 km² |
 | `glacier` | `vatnafar_flakar` | `yfirbordsvatn=4`, > 1 km² |
 | `lake` | `vatnafar_flakar` | `yfirbordsvatn=3`, > 2 km² |
-| `river` | `vatnafar_flakar` | `yfirbordsvatn=1` (wide rivers drawn as areas), dissolved, > 1 km² |
+| `river` | `vatnafar_flakar` | `yfirbordsvatn=1`, dissolved, > 1 km² |
 
-### Locations and tables
+</details>
 
-`tables.json` holds the event locations, their tables, and how many people sat at each table.
-The API doesn't include tables, so the data comes from the graph built into the talasaman.is/hringir page.
-`scripts/update-tables.py` refreshes it and reads **only** the page's structure (`nodes` and `links`).
-The page also contains people and membership data, which the script never reads or stores.
-Location coordinates were looked up with OpenStreetMap Nominatim and are kept between refreshes.
-A new location is reported with no coordinates and has to be looked up by hand.
+**Tables snapshot.** The API has no tables, so `tables.json` is read from the graph built into the talasaman.is/hringir page:
+
+- `scripts/update-tables.py` refreshes it, and reads **only** the page's structure. People and membership data on that page are never read or stored.
+- Locations were geocoded once with OpenStreetMap Nominatim. The script keeps those coordinates; a new location has to be looked up by hand.
+- The counts are people seated at tables, which differs from the API's registered member counts.
 
 ```bash
 python3 scripts/update-tables.py
 ```
 
-These counts are people seated at tables, which differs from the API's registered member counts.
+## Themes and colours
 
-## Themes
+Both themes use talasaman.is's own colours. The page follows the browser's light/dark setting until someone uses the ☀/☾ toggle.
 
-Both themes use talasaman.is's own colours (its `--color-*` CSS variables).
-The page follows the browser's light/dark setting until someone uses the ☀/☾ toggle in the sidebar, and then remembers their choice.
+- **Light:** the site itself, ink `#141a24` on cream `#fffdf9`.
+- **Dark:** cream `#ffffef` on ink. talasaman.is has no dark mode, but this is how it styles its dark areas.
 
-- **Light:** the site itself, with dark ink text (#141a24) on the cream background (#fffdf9).
-- **Dark** (`data-theme="dark"`): cream text (#ffffef) on an ink background (#141a24). talasaman.is has no dark mode, but this is how it styles its dark areas (code blocks, the video panel). Lighter text steps reuse its opacity scale, in cream instead of ink.
+All colours live in `css/tokens.css`. The categorical colours `--accent-1` … `--accent-8` are blá, rauður, grænn, amber, clay, terracotta, teal and gul, in that order.
 
-Categorical colours are `--accent-1` … `--accent-8` in `style.css`. They are the same in both themes. Use them in this order:
+- Only the first three stay distinct when any two touch, so the maps use only those.
+- The rest need labels or a table.
 
-| | Name | Hex |
-|---|---|---|
-| 1 | blá | `#2753f5` |
-| 2 | rauður | `#d64000` |
-| 3 | grænn | `#1ba672` |
-| 4 | amber | `#e8a04b` |
-| 5 | clay | `#9e5429` |
-| 6 | terracotta | `#c8743c` |
-| 7 | teal | `#2f5d62` |
-| 8 | gul | `#ffc60b` |
+## Accessibility
 
-Slots 1–3 stay distinct on both cream and ink, even when any two touch, so the maps use only those.
-Slots 4–8 are the brand colours as-is. They don't pass those checks, so use them with labels or a table.
+- **Text contrast:** at least 7:1 (WCAG AAA) in both themes.
+- **Map marks and controls:** at least 3:1.
+- **Typography:** body text is 16 px at weight 400, and nothing is smaller than 13 px.
+- **Keyboard:** every control can be reached by keyboard and shows a visible focus outline.
+- **Motion:** animations stop when the system asks for reduced motion.
+
+Brand colours are kept as they are. Only the colours derived from them, such as the muted text greys and the darker group fill, were adjusted to pass.
 
 ## Licence
 

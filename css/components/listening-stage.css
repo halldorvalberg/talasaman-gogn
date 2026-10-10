@@ -1,0 +1,89 @@
+/* ---- Listening view (listening-stage.js) -------------------------------- */
+/* Full screen on any device: the image takes whatever room the player leaves.
+   Portrait and wide screens stack image over player; short landscape screens
+   (a phone on its side) put the player beside the image. */
+
+body.stage-open { overflow: hidden; }
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  height: 100dvh;
+  padding:
+    max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  background: var(--bg);
+  color: var(--ink);
+}
+.stage-art {
+  container-type: size;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+/* The image (with room to jolt) is about 0.85 times as tall as it is wide. */
+.stage-art .hero-chorus { width: min(100cqw, 117cqh); max-width: none; padding: 6%; }
+.stage-player {
+  width: min(100%, 56rem);
+  margin: 0 auto;
+  padding-top: 0.75rem;
+}
+.stage-now {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0 0 0.75rem;
+  font-size: clamp(0.9375rem, 2.2vmin, 1.125rem);
+}
+.stage-count { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.stage-title { color: var(--ink); }
+.stage-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+.stage-line { flex: 1 1 12rem; min-width: 0; }
+.stage-time {
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+}
+.stage-button {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: transparent;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+.stage-button:hover { background: var(--ink); color: var(--bg); }
+.stage-play { width: 60px; height: 60px; background: var(--ink); color: var(--bg); }
+.stage-close {
+  position: absolute;
+  top: max(1rem, env(safe-area-inset-top));
+  right: max(1rem, env(safe-area-inset-right));
+  z-index: 1;
+}
+
+/* Narrow screens: the progress line gets a row of its own above the buttons. */
+@media (max-width: 520px) {
+  .stage-line { flex-basis: 100%; order: -1; }
+  .stage-time { margin-left: auto; }
+}
+
+/* Short landscape (phone on its side): image left, player right. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .stage { grid-template-rows: minmax(0, 1fr); grid-template-columns: minmax(0, 1fr) minmax(15rem, 38%); gap: 1rem; }
+  .stage-player { align-self: center; padding: 3.5rem 0 0; }
+  .stage-line { flex-basis: 100%; order: -1; }
+  .stage-time { margin-left: auto; }
+}

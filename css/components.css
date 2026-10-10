@@ -1,0 +1,156 @@
+/* Shared pieces used across pages: the endpoint button and raw links,
+   fold-out sections, data tables, legends and tooltips. Larger components
+   have their own file in css/components/. */
+
+/* ---- Endpoint button and raw links -------------------------------------- */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+button.endpoint {
+  font: inherit;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.875rem;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  min-height: 44px;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+button.endpoint:hover { background: var(--ink); color: var(--bg); }
+button.endpoint:disabled { cursor: wait; }
+button.endpoint .method { color: var(--ink-3); margin-right: 0.4rem; }
+button.endpoint:hover .method { color: inherit; }
+
+.raw {
+  display: inline-block;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  text-decoration: none;
+}
+.raw:hover { color: var(--ink); text-decoration: underline; }
+
+/* ---- Fold-out sections (<details>) -------------------------------------- */
+
+details {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+details > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 1rem 0;
+  font-size: 0.875rem;
+  color: var(--ink-2);
+  user-select: none;
+}
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before {
+  content: "+";
+  display: inline-block;
+  width: 1.5rem;
+  color: var(--ink-3);
+}
+details[open] > summary::before { content: "−"; }
+details > summary:hover { color: var(--ink); }
+.body { padding: 0.5rem 0 2rem; }
+.table-toggle { margin-top: 3rem; }
+
+/* ---- Data table --------------------------------------------------------- */
+
+.table-wrap {
+  max-height: 70vh;
+  overflow: auto;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.875rem;
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.6rem 1rem 0.6rem 0;
+  border-bottom: 1px solid var(--line);
+}
+thead {
+  position: sticky; /* column names and filters stay in view while scrolling */
+  top: 0;
+  z-index: 1;
+  background: var(--bg);
+}
+th {
+  font-weight: 500;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  border-bottom-color: var(--line-strong);
+}
+th.filter-cell {
+  padding-top: 0.5rem;
+  padding-bottom: 0.75rem;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.filter {
+  width: 100%;
+  min-width: 7rem;
+  min-height: 36px;
+  padding: 0.35rem 0.5rem;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+}
+.filter::placeholder { color: var(--ink-3); opacity: 1; }
+.table-status { margin: 0 0 0.75rem; font-size: 0.875rem; color: var(--ink-3); }
+td { color: var(--ink-2); }
+td.num { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
+td.empty { color: var(--ink-3); }
+
+/* ---- Legend ------------------------------------------------------------- */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin: 1.5rem 0 2rem;
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.legend > span { display: inline-flex; align-items: center; gap: 0.5rem; }
+.swatch {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--line-strong);
+}
+
+/* ---- Tooltip ------------------------------------------------------------ */
+
+.viz { position: relative; }
+
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  white-space: nowrap;
+  z-index: 5;
+}
+.tooltip strong { font-weight: 500; color: var(--ink); }
