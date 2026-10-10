@@ -61,6 +61,24 @@ toggle.addEventListener('click', () => {
   if (!narrow.matches) localStorage.setItem('sidebar', open ? 'open' : 'closed');
 });
 
+// ---- Palette ----------------------------------------------------------------
+
+const PALETTES = { neo: 'Neo-scandi', talasaman: 'Talasaman.is' };
+const paletteButton = document.getElementById('toggle-palette');
+const paletteName = document.getElementById('palette-name');
+
+function setPalette(name) {
+  if (name === 'talasaman') document.documentElement.dataset.palette = name;
+  else delete document.documentElement.dataset.palette;
+  localStorage.setItem('palette', name);
+  paletteName.textContent = PALETTES[name];
+}
+
+setPalette(document.documentElement.dataset.palette ?? 'neo');
+paletteButton.addEventListener('click', () => {
+  setPalette(document.documentElement.dataset.palette === 'talasaman' ? 'neo' : 'talasaman');
+});
+
 for (const p of PAGES) {
   const a = document.createElement('a');
   a.href = `#/${p.id}`;

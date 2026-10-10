@@ -51,6 +51,13 @@ For maps and scatter plots, where every colour can sit next to every other, use 
 | 7 | Blóðberg (wild thyme) | `#c45c8c` |
 | 8 | Sina (dry grass) | `#9c8f22` |
 
+### Talasaman.is palette
+
+The top-right button switches to talasaman.is's own colours, a cream background with dark text, and remembers the choice.
+The colours are taken from the site's `--color-*` CSS variables, and the theme is in `style.css` under `:root[data-palette="talasaman"]`.
+Its slots 1–3 (blá `#2753f5`, rauður `#d64000`, grænn `#1ba672`) stay distinct even when any two touch, so the map uses them.
+Slots 4–8 (amber, clay, terracotta, teal, gul) are the brand colours as-is. They don't pass the checks on cream, so use them with labels or a table.
+
 ## Licence
 
 - Gögn: Samtal, félag til almannaheilla (talasaman.is), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)

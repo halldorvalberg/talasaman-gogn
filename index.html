@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Talasaman gögn</title>
   <link rel="stylesheet" href="style.css">
+  <script>
+    if (localStorage.getItem('palette') === 'talasaman') document.documentElement.dataset.palette = 'talasaman';
+  </script>
 </head>
 <body>
   <aside id="sidebar">
@@ -25,6 +28,10 @@
         <span></span><span></span><span></span>
       </button>
       <span id="crumb"></span>
+      <button id="toggle-palette" title="Switch colour palette">
+        <span class="palette-dots"><i></i><i></i><i></i></span>
+        <span id="palette-name"></span>
+      </button>
     </header>
 
     <main id="page"></main>
