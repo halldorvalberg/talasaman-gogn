@@ -65,20 +65,20 @@ toggle.addEventListener('click', () => {
 
 // ---- Palette ----------------------------------------------------------------
 
-const PALETTES = { neo: 'Neo-scandi', talasaman: 'Talasaman.is' };
+const PALETTES = { talasaman: 'Talasaman.is', mono: 'Monochrome' };
 const paletteButton = document.getElementById('toggle-palette');
 const paletteName = document.getElementById('palette-name');
 
 function setPalette(name) {
-  if (name === 'talasaman') document.documentElement.dataset.palette = name;
+  if (name === 'mono') document.documentElement.dataset.palette = name;
   else delete document.documentElement.dataset.palette;
   localStorage.setItem('palette', name);
   paletteName.textContent = PALETTES[name];
 }
 
-setPalette(document.documentElement.dataset.palette ?? 'neo');
+setPalette(document.documentElement.dataset.palette === 'mono' ? 'mono' : 'talasaman');
 paletteButton.addEventListener('click', () => {
-  setPalette(document.documentElement.dataset.palette === 'talasaman' ? 'neo' : 'talasaman');
+  setPalette(document.documentElement.dataset.palette === 'mono' ? 'talasaman' : 'mono');
 });
 
 for (const p of PAGES) {

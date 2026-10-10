@@ -45,29 +45,29 @@ npx mapshaper raw.geojson -filter-fields postnumer,stadur -simplify 6% keep-shap
 | `lake` | `vatnafar_flakar` | `yfirbordsvatn=3`, > 2 km² |
 | `river` | `vatnafar_flakar` | `yfirbordsvatn=1` (wide rivers drawn as areas), dissolved, > 1 km² |
 
-## Accent palette
+## Palettes
 
-Categorical colours for future charts, defined as `--accent-1` … `--accent-8` in `style.css`.
-Use them in order. They were checked against the black background for even brightness, saturation and colour-blind contrast.
-For maps and scatter plots, where every colour can sit next to every other, use only the first three.
+The top-right button switches between two palettes, and the page remembers the choice.
+
+**Talasaman.is (default):** the site's own `--color-*` CSS variables on a cream background (#fffdf9) with dark ink text (#141a24).
+Categorical colours are `--accent-1` … `--accent-8` in `style.css`. Use them in this order:
 
 | | Name | Hex |
 |---|---|---|
-| 1 | Fjörður (fjord blue) | `#4f86c6` |
-| 2 | Okkur (ochre) | `#b8822a` |
-| 3 | Jökullón (glacier teal) | `#00978a` |
-| 4 | Leir (clay) | `#cc5f45` |
-| 5 | Lúpína (lupine) | `#8f7ad6` |
-| 6 | Mosi (moss) | `#6a9a48` |
-| 7 | Blóðberg (wild thyme) | `#c45c8c` |
-| 8 | Sina (dry grass) | `#9c8f22` |
+| 1 | blá | `#2753f5` |
+| 2 | rauður | `#d64000` |
+| 3 | grænn | `#1ba672` |
+| 4 | amber | `#e8a04b` |
+| 5 | clay | `#9e5429` |
+| 6 | terracotta | `#c8743c` |
+| 7 | teal | `#2f5d62` |
+| 8 | gul | `#ffc60b` |
 
-### Talasaman.is palette
+Slots 1–3 stay distinct on cream even when any two touch, so the maps use only those.
+Slots 4–8 are the brand colours as-is. They don't pass the checks on cream (gul is too light, teal reads grey), so use them with labels or a table.
 
-The top-right button switches to talasaman.is's own colours, a cream background with dark text, and remembers the choice.
-The colours are taken from the site's `--color-*` CSS variables, and the theme is in `style.css` under `:root[data-palette="talasaman"]`.
-Its slots 1–3 (blá `#2753f5`, rauður `#d64000`, grænn `#1ba672`) stay distinct even when any two touch, so the map uses them.
-Slots 4–8 (amber, clay, terracotta, teal, gul) are the brand colours as-is. They don't pass the checks on cream, so use them with labels or a table.
+**Monochrome** (`data-palette="mono"`): a black background, white hairlines and greys only.
+Amounts are shown by lightness, from dark (few) to white (many). Categories have no colour here, so they need labels, patterns or position.
 
 ## Licence
 

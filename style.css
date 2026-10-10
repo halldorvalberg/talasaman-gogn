@@ -1,56 +1,11 @@
-/* Scandinavian minimal, inverted: black ground, white hairlines, lots of blackspace. */
+/* Two palettes:
+   - talasaman.is (default): the site's own --color-* tokens, cream canvas, ink text.
+   - Monochrome (data-palette="mono"): black ground, white hairlines, greys only. */
 
-:root {
-  color-scheme: dark;
-  --bg: #000;
-  --ink: #f2f2f0;
-  --ink-2: #a3a3a0;
-  --ink-3: #6b6b68;
-  --line: rgba(255, 255, 255, 0.16);
-  --line-strong: rgba(255, 255, 255, 0.6);
-  --map-stroke: rgba(255, 255, 255, 0.45);
-  --error: #ff8a80;
-  --water: color-mix(in oklab, var(--accent-1) 75%, var(--bg));
-  --ice: color-mix(in oklab, var(--ink) 24%, var(--bg));
-  --ice-line: color-mix(in oklab, var(--ink) 35%, var(--bg));
-  --pin: var(--accent-2);
-  --sidebar-w: 248px;
-
-  /* Map: three hue groups (the all-pairs-safe accents 1–3), two shades each.
-     Darker shade = lower bin within the group. */
-  --bin-empty: #000;
-  --bin-0: color-mix(in oklab, var(--accent-1) 65%, #000); /* 1–2   */
-  --bin-1: var(--accent-1);                                 /* 3–5   */
-  --bin-2: color-mix(in oklab, var(--accent-3) 70%, #000); /* 6–10  */
-  --bin-3: var(--accent-3);                                 /* 11–20 */
-  --bin-4: var(--accent-2);                                 /* 21–40 */
-  --bin-5: color-mix(in oklab, var(--accent-2) 55%, #fff); /* 41+   */
-
-  /* Neo-scandi accents for categorical data, in this fixed order (never cycle).
-     Validated on #000 (dataviz validate_palette.js): L 0.48–0.67, chroma ≥ 0.1,
-     adjacent CVD ΔE ≥ 9.1, normal-vision ΔE ≥ 18.9, contrast ≥ 3:1.
-     Scatter/map/all-pairs use: only the first three are safe together. */
-  --accent-1: #4f86c6; /* fjörður   — fjord blue    */
-  --accent-2: #b8822a; /* okkur     — ochre         */
-  --accent-3: #00978a; /* jökullón  — glacier teal  */
-  --accent-4: #cc5f45; /* leir      — clay          */
-  --accent-5: #8f7ad6; /* lúpína    — lupine        */
-  --accent-6: #6a9a48; /* mosi      — moss          */
-  --accent-7: #c45c8c; /* blóðberg  — wild thyme    */
-  --accent-8: #9c8f22; /* sina      — dry grass     */
-
-  font-family: "Inter", "Helvetica Neue", system-ui, sans-serif;
-  font-size: 15px;
-  line-height: 1.6;
-  font-weight: 300;
-  letter-spacing: 0.005em;
-}
-
-/* Palette from talasaman.is (its --color-* tokens): cream canvas, ink text.
-   Brand colours kept as-is. Slots 1–3 (blá, rauður, grænn) pass the dataviz
+/* Brand colours are kept as-is. Slots 1–3 (blá, rauður, grænn) pass the dataviz
    validator all-pairs on #fffdf9; 4–8 don't (gul too light, teal reads grey),
    so use them only with labels or a table view. */
-:root[data-palette="talasaman"] {
+:root {
   color-scheme: light;
   --bg: #fffdf9;          /* canvas */
   --ink: #141a24;         /* ink */
@@ -60,6 +15,7 @@
   --line-strong: #141a24;
   --map-stroke: rgba(20, 26, 36, 0.35);
   --error: #d64000;
+  --sidebar-w: 248px;
 
   --accent-1: #2753f5; /* blá        */
   --accent-2: #d64000; /* rauður     */
@@ -70,14 +26,62 @@
   --accent-7: #2f5d62; /* teal       */
   --accent-8: #ffc60b; /* gul        */
 
-  /* On a light ground, the lower bin in each group is the paler shade. */
+  /* Circles map: three hue groups, two shades each; paler = lower bin. */
   --bin-empty: #fffdf9;
-  --bin-0: color-mix(in oklab, var(--accent-1) 40%, #fff);
-  --bin-1: var(--accent-1);
-  --bin-2: color-mix(in oklab, var(--accent-3) 40%, #fff);
-  --bin-3: var(--accent-3);
-  --bin-4: var(--accent-2);
-  --bin-5: color-mix(in oklab, var(--accent-2) 65%, #000);
+  --bin-0: color-mix(in oklab, var(--accent-1) 40%, #fff); /* 1–2   */
+  --bin-1: var(--accent-1);                                 /* 3–5   */
+  --bin-2: color-mix(in oklab, var(--accent-3) 40%, #fff); /* 6–10  */
+  --bin-3: var(--accent-3);                                 /* 11–20 */
+  --bin-4: var(--accent-2);                                 /* 21–40 */
+  --bin-5: color-mix(in oklab, var(--accent-2) 65%, #000); /* 41+   */
+
+  /* Places map */
+  --water: color-mix(in oklab, var(--accent-1) 75%, var(--bg));
+  --ice: color-mix(in oklab, var(--ink) 18%, var(--bg));
+  --ice-line: color-mix(in oklab, var(--ink) 35%, var(--bg));
+  --pin: var(--accent-2);
+
+  /* Palette button swatch */
+  --dot-1: var(--accent-1);
+  --dot-2: var(--accent-3);
+  --dot-3: var(--accent-2);
+
+  font-family: "Inter", "Helvetica Neue", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 300;
+  letter-spacing: 0.005em;
+}
+
+/* Monochrome: no hues at all. Magnitude is lightness (dark = few, white = many);
+   categories need labels, patterns or position, never colour. */
+:root[data-palette="mono"] {
+  color-scheme: dark;
+  --bg: #000;
+  --ink: #f2f2f0;
+  --ink-2: #a3a3a0;
+  --ink-3: #6b6b68;
+  --line: rgba(255, 255, 255, 0.16);
+  --line-strong: rgba(255, 255, 255, 0.6);
+  --map-stroke: rgba(255, 255, 255, 0.45);
+  --error: #f2f2f0;
+
+  --bin-empty: #000;
+  --bin-0: #2b2b2a;
+  --bin-1: #474745;
+  --bin-2: #6b6b68;
+  --bin-3: #959592;
+  --bin-4: #c3c3c0;
+  --bin-5: #f2f2f0;
+
+  --water: #42423f;
+  --ice: #8a8a87;
+  --ice-line: #a3a3a0;
+  --pin: #f2f2f0;
+
+  --dot-1: #474745;
+  --dot-2: #959592;
+  --dot-3: #f2f2f0;
 }
 
 * { box-sizing: border-box; }
@@ -201,9 +205,9 @@ a:hover { text-decoration-color: var(--ink); }
 #toggle-palette:hover { color: var(--ink); border-color: var(--line-strong); }
 .palette-dots { display: inline-flex; gap: 3px; }
 .palette-dots i { width: 8px; height: 8px; border-radius: 50%; }
-.palette-dots i:nth-child(1) { background: var(--accent-1); }
-.palette-dots i:nth-child(2) { background: var(--accent-3); }
-.palette-dots i:nth-child(3) { background: var(--accent-2); }
+.palette-dots i:nth-child(1) { background: var(--dot-1); }
+.palette-dots i:nth-child(2) { background: var(--dot-2); }
+.palette-dots i:nth-child(3) { background: var(--dot-3); }
 
 main {
   flex: 1;
