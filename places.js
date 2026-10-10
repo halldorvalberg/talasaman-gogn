@@ -114,6 +114,7 @@ export async function renderPlacesMap(rows, buildTable) {
 
   const stage = el('div', { className: 'places-stage' });
   stage.style.aspectRatio = `${w} / ${h}`;
+  stage.style.setProperty('--ratio', w / h);
   stage.append(svg);
 
   // ---- View: zoom k, pan (ux, uy) in stage fractions ----
@@ -239,10 +240,10 @@ export async function renderPlacesMap(rows, buildTable) {
     const clusters = [];
     if (k < MAX_K - 1e-6) {
       for (const p of pins) {
-        if (p.cluster || p.sx < -40 || p.sy < -40 || p.sx > W + 40 || p.sy > H + 40) continue;
+        if (p.cluster || p === highlighted || p.sx < -40 || p.sy < -40 || p.sx > W + 40 || p.sy > H + 40) continue;
         const members = [p];
         for (const q of pins) {
-          if (q === p || q.cluster) continue;
+          if (q === p || q.cluster || q === highlighted) continue;
           if (Math.abs(q.sx - p.sx) < CLUSTER_PX && Math.abs(q.sy - p.sy) < CLUSTER_PX) members.push(q);
         }
         if (members.length > 1) {
@@ -370,27 +371,23 @@ export async function renderPlacesMap(rows, buildTable) {
   // ---- List beside the map ----
   // Hovering (or focusing) a box highlights its pin, wiggles it and zooms the
   // map to it. A short delay keeps a quick pass over the list from jumping around.
-  const HOVER_K = 9;
+  const HOVER_K = 4; // gentle: enough to see the area, keeps the context
   let hoverTimer = 0;
   let highlighted = null;
 
   function zoomToPin(p) {
     const k = Math.max(view.k, HOVER_K);
-    const centred = (kk) => ({ k: kk, ux: 0.5 - kk * p.fx, uy: 0.5 - kk * p.fy });
-    setView(centred(k), true, {
-      duration: 260,
-      // Still inside a group at this zoom? Go all the way in.
-      onDone: () => { if (p.cluster) setView(centred(MAX_K), true, { duration: 220 }); },
-    });
+    setView({ k, ux: 0.5 - k * p.fx, uy: 0.5 - k * p.fy }, true, { duration: 260 });
   }
 
   function highlight(p, on) {
     if (!on) {
-      if (highlighted === p) { p.el.classList.remove('highlight'); p.card.classList.remove('active'); highlighted = null; }
+      if (highlighted === p) { p.el.classList.remove('highlight'); p.card.classList.remove('active'); highlighted = null; draw(); }
       return;
     }
     if (highlighted && highlighted !== p) highlight(highlighted, false);
     highlighted = p;
+    draw(); // pull it out of any group right away
     p.card.classList.add('active');
     p.el.classList.remove('highlight');
     void p.el.offsetWidth; // restart the wiggle
