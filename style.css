@@ -1,0 +1,80 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  line-height: 1.4;
+}
+
+body {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+h1 { margin-bottom: 0.25rem; }
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+}
+
+button {
+  font: inherit;
+  font-family: ui-monospace, monospace;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+button:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
+button:disabled { opacity: 0.5; cursor: wait; }
+
+details {
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+summary {
+  font-family: ui-monospace, monospace;
+  padding: 0.6rem 0.9rem;
+  cursor: pointer;
+  user-select: none;
+}
+details[open] summary {
+  border-bottom: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+}
+
+.table-wrap {
+  max-height: 70vh;
+  overflow: auto;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9rem;
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.4rem 0.7rem;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+}
+th {
+  position: sticky;
+  top: 0;
+  background: Canvas;
+}
+tbody tr:nth-child(even) { background: color-mix(in srgb, currentColor 4%, transparent); }
+td.num { text-align: right; font-variant-numeric: tabular-nums; }
+td.empty { opacity: 0.4; }
+
+.error { color: crimson; padding: 0 0.9rem; }
+
+footer {
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
