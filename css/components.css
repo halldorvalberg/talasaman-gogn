@@ -190,3 +190,24 @@ td.empty { color: var(--ink-3); }
 .icon { width: 1em; height: 1em; fill: currentColor; flex: none; vertical-align: -0.125em; }
 .stage-button .icon { width: 1.125rem; height: 1.125rem; }
 .stage-play .icon { width: 1.5rem; height: 1.5rem; }
+
+/* ---- Audio debug panel (audio-debug.js, ?debug=1) ----------------------- */
+
+.audio-debug {
+  position: fixed;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  z-index: 200;
+  max-width: min(26rem, calc(100vw - 1rem));
+  max-height: 60vh;
+  overflow: auto;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  font-size: 0.8125rem;
+  color: var(--ink);
+}
+.audio-debug h2 { margin: 0 0 0.5rem; font-size: 0.875rem; }
+.audio-debug dl { display: grid; grid-template-columns: auto 1fr; gap: 0.2rem 0.75rem; margin: 0; }
+.audio-debug dt { color: var(--ink-2); }
+.audio-debug dd { margin: 0; overflow-wrap: anywhere; }

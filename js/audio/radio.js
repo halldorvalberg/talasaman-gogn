@@ -95,21 +95,62 @@ for (const type of ['pointerup', 'click', 'keydown']) { // a touch counts when t
   document.addEventListener(type, () => { if (context && context.state !== 'running') context.resume().catch(() => {}); }, true);
 }
 
+/** What happened when the engine started, for audioStatus(). */
+const startup = { error: null, worklets: true };
+
+/** The stages that run as AudioWorklets (they need a secure https page). */
+const WORKLET_STAGES = ['denoise', 'expander'];
+
+/**
+ * Load the worklet stages. Without them (no AudioWorklet on a page that
+ * isn't https, or a browser that refuses them) the chain still runs
+ * without those two stages, so playback and the visualisers keep working.
+ */
+async function loadWorklets(ctx) {
+  try {
+    await ctx.audioWorklet.addModule(new URL('./denoise-worklet.js', import.meta.url));
+    await ctx.audioWorklet.addModule(new URL('./expander-worklet.js', import.meta.url));
+    return true;
+  } catch (err) {
+    startup.error = `Noise reduction and expander unavailable: ${err.message}`;
+    return false;
+  }
+}
+
+/** The current preset, minus the worklet stages if they couldn't load. */
+const chainPreset = () => (startup.worklets
+  ? currentPreset()
+  : { ...currentPreset(), order: STAGES.map((s) => s.id).filter((id) => !WORKLET_STAGES.includes(id)) });
+
 /** Start the audio engine once; later calls wait for the same start-up. */
 function startEngine() {
   const ctx = audioContext(); // synchronously, while the gesture still counts
   starting ??= (async () => {
-    await ctx.audioWorklet.addModule(new URL('./denoise-worklet.js', import.meta.url));
-    await ctx.audioWorklet.addModule(new URL('./expander-worklet.js', import.meta.url));
-    const chain = createRadioChain(ctx, currentPreset());
+    startup.worklets = await loadWorklets(ctx);
+    const chain = createRadioChain(ctx, chainPreset());
     chain.output.connect(ctx.destination);
     engine = { ctx, chain, taps: createTaps(ctx, chain) };
     players.forEach(connect);
     apply();
     listeners.forEach((fn) => fn(engine));
   })();
-  starting.catch((err) => console.error('Radio sound could not start:', err));
+  starting.catch((err) => {
+    startup.error = err.message;
+    console.error('Radio sound could not start:', err);
+  });
   return starting;
+}
+
+/** How the audio engine is doing, for the debug panel. */
+export function audioStatus() {
+  return {
+    secure: window.isSecureContext,
+    workletSupport: Boolean(window.AudioWorkletNode),
+    context: context?.state ?? 'not created',
+    engine: engine ? 'running' : starting ? 'starting or failed' : 'not started (press play)',
+    worklets: startup.worklets,
+    error: startup.error,
+  };
 }
 
 /** Every player on the page registers here; pressing play starts the engine. */

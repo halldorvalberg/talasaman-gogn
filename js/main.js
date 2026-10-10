@@ -9,6 +9,8 @@ import { setupSidebar, closeSidebarIfNarrow } from './components/sidebar.js';
 import { setupThemeToggle } from './components/theme-toggle.js';
 import { endpointPage } from './views/endpoint.js';
 import { logoPulse } from './components/logo-pulse.js';
+import { showAudioDebug } from './components/audio-debug.js';
+import { splitHash } from './lib/hash.js';
 
 const nav = document.getElementById('pages');
 const main = document.getElementById('page');
@@ -75,3 +77,4 @@ setupThemeToggle();
 buildNav();
 window.addEventListener('hashchange', route);
 route();
+if (splitHash(location.hash).query.has('debug')) showAudioDebug(); // e.g. #/listen?debug=1

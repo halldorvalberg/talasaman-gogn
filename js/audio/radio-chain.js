@@ -232,7 +232,7 @@ export function createRadioChain(ctx, preset) {
   return {
     input: stages[0].switch.input,
     output: stages.at(-1).switch.output,
-    setStage: (id, on) => stages.find((s) => s.id === id).switch.set(on),
+    setStage: (id, on) => stages.find((s) => s.id === id)?.switch.set(on), // a stage left out of `order` is ignored
     configure,
   };
 }
