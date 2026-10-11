@@ -13,9 +13,10 @@ import json
 import re
 import sys
 import urllib.request
-from pathlib import Path
 
-OUT = Path(__file__).resolve().parent.parent / "data" / "tables.json"
+from _common import DATA, write_json
+
+OUT = DATA / "tables.json"
 
 
 def page_graph():
@@ -78,10 +79,10 @@ def build_locations(nodes, links, known):
 
 
 def main():
+    """Read the graph, keep the coordinates already known, and write tables.json."""
     nodes, links = page_graph()
     result = build_locations(nodes, links, known_locations())
-    OUT.write_text(json.dumps({"source": "https://talasaman.is/hringir", "locations": result},
-                              ensure_ascii=False, indent=1) + "\n")
+    write_json(OUT, {"source": "https://talasaman.is/hringir", "locations": result}, indent=1)
     print(f"{len(result)} locations, {sum(len(l['tables']) for l in result)} tables -> {OUT.name}")
     missing = [l["name"] for l in result if l["lat"] is None]
     if missing:

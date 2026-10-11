@@ -28,6 +28,43 @@ function stageMessage(text, { error = false } = {}) {
 /** Do two option sets pick different recordings to play? */
 const filtersDiffer = (a, b) => a.topic !== b.topic || a.location !== b.location;
 
+/** Back where the listener came from; a new entry instead if they edited the address here. */
+function close(route, state) {
+  if (route.from && !state.edited) history.back();
+  else location.hash = route.from ?? FALLBACK;
+}
+
+/** Keep the address on the recording now playing (without a new history entry). */
+function followTrack(state, index) {
+  state.options = { ...state.options, recording: state.entries[index].number, t: null };
+  history.replaceState(history.state, '', buildListenHash(state.options));
+}
+
+/** (Re)build the stage in `holder` for the current options. */
+function mount(holder, state, route) {
+  const { entries, start } = listenPlaylist(state.rows, state.options);
+  const { t, mood, loop } = state.options;
+  state.entries = entries;
+  state.stage?.destroy();
+  holder.replaceChildren();
+  state.stage = mountListeningStage(holder, {
+    rows: entries.map((entry) => entry.row), start, startAt: t, mood: mood ?? DEFAULT_MOOD, loop: loop ?? true,
+    onClose: () => close(route, state), onTrackChange: (index) => followTrack(state, index),
+  });
+}
+
+/** Fetch the recordings and start the stage, or say why it can't. */
+function loadStage(holder, state, route) {
+  fetchRecordings()
+    .then((rows) => {
+      if (state.left) return;
+      if (!rows.length) { holder.replaceChildren(stageMessage('No recordings to play.')); return; }
+      state.rows = rows;
+      mount(holder, state, route);
+    })
+    .catch((err) => holder.replaceChildren(stageMessage(err.message, { error: true })));
+}
+
 /**
  * The listening view page.
  * @param {object} page
@@ -39,48 +76,16 @@ export function listenPage(page, pages, route) {
   const holder = el('div', { className: 'listen-page' }, stageMessage('Loading recordings…'));
   const state = { options: parseListenHash(route.hash), rows: null, entries: [], stage: null, edited: false, left: false };
 
-  /** Back where the listener came from; a new entry instead if they edited the address here. */
-  const close = () => {
-    if (route.from && !state.edited) history.back();
-    else location.hash = route.from ?? FALLBACK;
-  };
-
-  /** Keep the address on the recording now playing (without a new history entry). */
-  const followTrack = (index) => {
-    state.options = { ...state.options, recording: state.entries[index].number, t: null };
-    history.replaceState(history.state, '', buildListenHash(state.options));
-  };
-
-  /** (Re)build the stage for the current options. */
-  const mount = () => {
-    const { entries, start } = listenPlaylist(state.rows, state.options);
-    const { t, mood, loop } = state.options;
-    state.entries = entries;
-    state.stage?.destroy();
-    holder.replaceChildren();
-    state.stage = mountListeningStage(holder, {
-      rows: entries.map((entry) => entry.row), start, startAt: t,
-      mood: mood ?? DEFAULT_MOOD, loop: loop ?? true, onClose: close, onTrackChange: followTrack,
-    });
-  };
-
   document.body.classList.add('stage-open');
   applyPreset(state.options.preset);
-  fetchRecordings()
-    .then((rows) => {
-      if (state.left) return;
-      if (!rows.length) { holder.replaceChildren(stageMessage('No recordings to play.')); return; }
-      state.rows = rows;
-      mount();
-    })
-    .catch((err) => holder.replaceChildren(stageMessage(err.message, { error: true })));
+  loadStage(holder, state, route);
 
   route.onChange((hash) => {
     state.edited = true;
     const before = state.options;
     state.options = parseListenHash(hash);
     if (state.options.preset !== before.preset) applyPreset(state.options.preset);
-    if (state.stage) updateStage(state, before, mount);
+    if (state.stage) updateStage(state, before, () => mount(holder, state, route));
   });
   route.onLeave(() => {
     state.left = true;
@@ -91,12 +96,12 @@ export function listenPage(page, pages, route) {
 }
 
 /**
- * Move the playing stage to new options: other filters rebuild it; another
- * mood, loop, recording or start time changes just that.
+ * Move the playing stage to new options: other filters or shuffle rebuild it
+ * (with `remount`); another mood, loop, recording or start time changes just that.
  */
-function updateStage(state, before, mount) {
+function updateStage(state, before, remount) {
   const now = state.options;
-  if (filtersDiffer(now, before) || now.shuffle !== before.shuffle) { mount(); return; }
+  if (filtersDiffer(now, before) || now.shuffle !== before.shuffle) { remount(); return; }
   if (now.mood !== before.mood) state.stage.setMood(now.mood ?? DEFAULT_MOOD);
   if (now.loop !== before.loop) state.stage.setLoop(now.loop ?? true);
   if (now.recording !== before.recording) state.stage.jump(indexOfRecording(state.entries, now.recording ?? 1), now.t);

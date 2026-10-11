@@ -226,13 +226,3 @@
   from { opacity: 0; translate: 0 0.4rem; }
 }
 
-/* Read out by screen readers, not shown: the label is written on the map. */
-.lens-status {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}

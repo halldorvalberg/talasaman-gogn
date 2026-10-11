@@ -1,8 +1,11 @@
 // The tone marks shared by the Groups views, like Samtal's: ▲ positive,
-// ● neutral, ▼ critical. Shape and a word carry the tone; colour only helps.
+// ● neutral, ▼ critical (TONES in data.js). Shape and a word carry the tone;
+// colour only helps. Also the summary tooltip the map and the strips share.
 
 import { el, svgEl } from '../../lib/dom.js';
-import { toneOf, excerpt } from './data.js';
+import { excerpt } from '../../lib/format.js';
+import { keepInside } from '../../components/tooltip.js';
+import { TONES, toneOf } from './data.js';
 
 /**
  * An SVG mark for a tone centred on (x, y).
@@ -27,24 +30,14 @@ export function toneGlyph(tone) {
 
 /** "▲ 4 positive · ● 1 neutral · ▼ 2 critical" as text, for counts { positive, neutral, critical }. */
 export function toneCountsText(counts) {
-  return ['positive', 'neutral', 'critical']
-    .map((key) => `${toneOf(key).glyph} ${counts[key]} ${toneOf(key).label}`).join(' · ');
+  return TONES.map(({ key, glyph, label }) => `${glyph} ${counts[key]} ${label}`).join(' · ');
 }
 
 /** { positive, neutral, critical } counts of a list of summaries. */
 export function countTones(summaries) {
-  const counts = { positive: 0, neutral: 0, critical: 0 };
+  const counts = Object.fromEntries(TONES.map(({ key }) => [key, 0]));
   for (const s of summaries) counts[s.tone]++;
   return counts;
-}
-
-/**
- * Keep a tooltip box inside its container: shift it left when it would run
- * past the right edge (the shared tooltip places it right of the pointer).
- */
-export function keepInside(box, container) {
-  const room = container.clientWidth - box.offsetWidth;
-  if (box.offsetLeft > room) box.style.left = `${Math.max(0, room)}px`;
 }
 
 /** Show a summary in a tooltip (topic, tone, the first 200 characters) at `point` ({ clientX, clientY }). */
@@ -52,10 +45,4 @@ export function showSummaryTip(tooltip, point, summary, container) {
   const { glyph, label } = toneOf(summary.tone);
   tooltip.show(point, `${summary.topic} · ${glyph} ${label}`, excerpt(summary.text));
   keepInside(tooltip.element, container);
-}
-
-/** The middle of an element on screen, as a pointer-like point for the tooltip. */
-export function centreOf(node) {
-  const box = node.getBoundingClientRect();
-  return { clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 };
 }

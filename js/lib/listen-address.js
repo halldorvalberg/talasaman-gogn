@@ -11,6 +11,7 @@
 
 import { splitHash } from './hash.js';
 import { formatClock } from './format.js';
+import { shuffled } from './math.js';
 import { PRESETS } from '../audio/presets.js';
 
 /** The route's page id (the path before the recording number). */
@@ -76,9 +77,6 @@ export function parseTime(text) {
   return value.split(':').reduce((total, part) => total * 60 + +part, 0);
 }
 
-/** 90 → '1:30', as written in the address. */
-export const formatTime = (seconds) => formatClock(seconds);
-
 /** Read the options from a hash like '#/listen/7?t=1:30&mood=calm'. */
 export function parseListenHash(hash) {
   const { path, query } = splitHash(hash);
@@ -107,7 +105,7 @@ const encodePart = (value) => encodeURIComponent(value).replace(ENCODED_LETTER, 
 export function buildListenHash(options) {
   const { recording, t, loop, shuffle } = { ...NO_OPTIONS, ...options };
   const params = [];
-  if (t !== null) params.push(`t=${formatTime(t)}`);
+  if (t !== null) params.push(`t=${formatClock(t)}`); // 90 → '1:30'
   for (const part of TEXT_PARTS) {
     if (options[part]) params.push(`${part}=${encodePart(options[part])}`);
   }
@@ -123,16 +121,6 @@ const sameText = (a, b) =>
 
 /** Does `row` match every filter in `filters` ([column, value] pairs)? */
 const matchesAll = (row, filters) => filters.every(([column, value]) => sameText(row[column], value));
-
-/** A copy of `items` in random order (Fisher–Yates); `random` returns 0…1. */
-export function shuffled(items, random = Math.random) {
-  const copy = [...items];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-}
 
 /**
  * The recordings an address plays, in playing order, and which to start with.
@@ -155,8 +143,8 @@ export function listenPlaylist(rows, { recording, topic, location, shuffle }, ra
   const entries = passing.length ? passing : numbered;
   const start = indexOfRecording(entries, recording ?? 1);
   if (shuffle === false) return { entries, start };
-  const rest = shuffled(entries.filter((_, i) => i !== start), random);
-  return { entries: recording ? [entries[start], ...rest] : shuffled(entries, random), start: 0 };
+  if (!recording) return { entries: shuffled(entries, random), start: 0 };
+  return { entries: [entries[start], ...shuffled(entries.filter((_, i) => i !== start), random)], start: 0 };
 }
 
 /**

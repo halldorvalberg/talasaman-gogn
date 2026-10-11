@@ -1,0 +1,48 @@
+/* ---- Transcript (transcript-highlight.js) ------------------------------- */
+/* Before playback, and without timings, the text keeps its container's
+   colour. While following: quieter words to come, the current word blue and
+   underlined (not by colour alone), spoken words fading from blue to the
+   normal colour (instant with reduced motion: base.css drops transitions).
+   Nothing changes size or weight, so the text never moves. */
+
+.transcript { position: relative; } /* the words' offsetTop counts from here, for scrolling */
+.transcript.has-times .transcript-word { cursor: pointer; }
+.transcript.is-following .transcript-word { color: var(--transcript-upcoming); }
+.transcript.is-following .transcript-word.is-spoken {
+  color: var(--transcript-spoken);
+  transition: color 0.7s ease-out;
+}
+.transcript.is-following .transcript-word.is-now {
+  color: var(--transcript-now);
+  text-decoration: underline 0.1em;
+  text-underline-offset: 0.22em;
+}
+
+/* ---- Blue tone ---------------------------------------------------------- */
+/* White on its own deep blue box: words to come dimmer, the current word
+   bright white on a lighter blue, spoken words white. */
+.transcript-blue {
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: var(--transcript-blue-paper);
+  color: var(--transcript-blue-spoken);
+}
+.transcript-blue.is-following .transcript-word { color: var(--transcript-blue-upcoming); }
+.transcript-blue.is-following .transcript-word.is-spoken { color: var(--transcript-blue-spoken); }
+.transcript-blue.is-following .transcript-word.is-now {
+  border-radius: 0.2em;
+  background: var(--transcript-blue-now-bg);
+  box-shadow: 0 0 0 0.12em var(--transcript-blue-now-bg); /* room round the word without moving the text */
+  color: var(--transcript-blue-now);
+}
+
+/* ---- A box of a few lines ----------------------------------------------- */
+/* For tight places (the listening view, demos): the text scrolls inside,
+   following the current line. */
+.transcript-lines {
+  max-height: calc(var(--transcript-lines, 3) * 1lh);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
+}
+.transcript-blue.transcript-lines { max-height: calc(var(--transcript-lines, 3) * 1lh + 1.5rem); }

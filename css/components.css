@@ -13,7 +13,7 @@
 
 button.endpoint {
   font: inherit;
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 0.875rem;
   color: var(--ink);
   background: transparent;
@@ -185,7 +185,7 @@ td.empty { color: var(--ink-3); }
   background: var(--highlight);
 }
 
-/* ---- Icons (icons.js) ----------------------------------------------------- */
+/* ---- Icons (icons.js) --------------------------------------------------- */
 
 .icon { width: 1em; height: 1em; fill: currentColor; flex: none; vertical-align: -0.125em; }
 .stage-button .icon { width: 1.125rem; height: 1.125rem; }
@@ -218,7 +218,7 @@ td.empty { color: var(--ink-3); }
 .radial-bars { display: block; width: 100%; height: auto; overflow: visible; }
 .radial-bar { fill: none; stroke: var(--highlight); stroke-width: 14; stroke-linecap: round; transition: opacity 0.15s; }
 .radial-label {
-  font-size: 13px;
+  font-size: calc(13px * var(--radial-unit, 1)); /* 13 px on screen (radial-bars.js sets the unit) */
   text-anchor: end;
   fill: var(--ink);
   stroke: var(--bg); /* a halo in the page colour, so names read over bar ends */
@@ -226,13 +226,9 @@ td.empty { color: var(--ink-3); }
   stroke-linejoin: round;
   paint-order: stroke;
 }
-.radial-centre { font-size: 13px; fill: var(--ink-2); }
+.radial-centre { font-size: calc(13px * var(--radial-unit, 1)); fill: var(--ink-2); }
 .radial-ring { cursor: default; }
 .radial-bars:has(.radial-ring:hover) .radial-ring:not(:hover) .radial-bar { opacity: 0.35; }
-/* The chart scales with its width; on a phone the names are drawn larger
-   (in chart units) so they still read at about 13px. */
 @media (max-width: 600px) {
-  .radial-label { font-size: 21px; }
-  .radial-centre { font-size: 17px; }
   .count-bars th:first-child { width: 55%; } /* room for whole topic names */
 }

@@ -113,7 +113,8 @@ a.radio-play-all { display: inline-flex; align-items: center; text-decoration: n
 .radio-slider {
   grid-column: 1 / -1;
   width: 100%;
-  margin: 0.25rem 0 0;
+  min-height: 24px; /* a 24 px target, the track centred in it */
+  margin: 0;
   accent-color: var(--ink);
   cursor: pointer;
 }

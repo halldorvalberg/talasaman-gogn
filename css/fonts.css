@@ -46,4 +46,5 @@
 :root {
   --font-sans-samtal: "Inter Samtal", "Inter", system-ui, sans-serif;
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace; /* system only: code, the link, endpoint buttons */
 }

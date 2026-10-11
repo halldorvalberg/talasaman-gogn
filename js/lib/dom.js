@@ -27,11 +27,23 @@ export function svgEl(tag, attrs = {}, ...children) {
   return node;
 }
 
+/**
+ * The events that count as a user gesture, the only time browsers let a page
+ * start sound. A touch counts when the finger lifts (pointerup), not on touch-down.
+ */
+export const GESTURE_EVENTS = ['pointerup', 'click', 'keydown'];
+
 /** Re-add a class so its CSS animation plays again from the start. */
 export function replayClass(node, className) {
   node.classList.remove(className);
   void node.offsetWidth; // force a style flush between remove and add
   node.classList.add(className);
+}
+
+/** The middle of an element on screen, as a pointer-like { clientX, clientY } (e.g. for a tooltip). */
+export function middleOnScreen(node) {
+  const box = node.getBoundingClientRect();
+  return { clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 };
 }
 
 /** Remove a class from every matching element inside `root`. */

@@ -38,7 +38,7 @@ export function renderSummaryTopics(rows) {
       `${plural(set.length, 'set topic', 'set topics')} the tables could pick, and ${own.length} the tables wrote themselves.`),
     radialBars(set, {
       label: `Set topics by number of summaries, most frequent outermost: ${set.map((t) => `${t.name} ${t.count}`).join(', ')}`,
-      centre: own.length ? `+${own.length} own topics` : '',
+      centre: own.length ? [`+${own.length}`, 'own topics'] : '',
       unit: 'summaries',
     }),
     countBars(set, { caption: 'Set topics', ...HEADINGS }, max),

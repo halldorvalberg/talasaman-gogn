@@ -11,11 +11,13 @@ There is one page per dataset:
 | Overview | Headline numbers and an index of the datasets |
 | Circles | Members per postcode on a map. A second map shows each event location with its tables and the people at each table. |
 | Places | Favourite places as pins on a map of Iceland. Groups of pins zoom in when clicked, and a list beside the map flies to each place. |
-| Summaries › Audio | The 24 recorded table discussions, each with a player and the facilitator's summary. Filter by topic or location, or search. An optional **Radio sound** switch cleans up the voices with classic sound processing (no AI): high-pass, spectral noise reduction, adaptive expander, de-esser, EQ, compressors and a limiter. There are three presets: **Natural**, **Clear** (the default) and **Radio**. A before/after view shows the level and spectrum. |
-| Listening view (`#/listen`) | Full screen, opened from the Audio page or a link: the front-page image moves with the voice while the recordings play in turn. The address controls it and follows it: `#/listen/7` starts at recording 7, `?t=1:30` that far in, `?topic=…&location=…` only those recordings, `?preset=clear\|natural\|radio\|off` sets Radio sound, `?mood=calm` the calm chorus, `?loop=0` stops after the last. Not in the sidebar. |
+| Summaries | The facilitators' summaries as a table, and **COUNT topics**: how many summaries each topic came up in, as a radial bar chart with the numbers in tables below. |
+| Summaries › Audio | The recorded table discussions, each with a player and the facilitator's summary. Filter by topic or location, or search. An optional **Radio sound** switch cleans up the voices with classic sound processing (no AI): high-pass, spectral noise reduction, adaptive expander, de-esser, EQ, compressors and a limiter. There are three presets: **Natural**, **Clear** (the default) and **Radio**. A before/after view shows the level and spectrum. |
+| Listening view (`#/listen`) | Full screen, opened from the Audio page or a link: the front-page image moves with the voice while the recordings play in turn. The address controls it and follows it: `#/listen/7` starts at recording 7, `?t=1:30` that far in, `?topic=…&location=…` only those recordings, `?preset=clear\|natural\|radio\|off` sets Radio sound, `?mood=calm` the calm chorus, `?loop=0` stops after the last, `?shuffle=0` plays in the Audio page's order instead of a new random one. `?debug=1` on any page shows an audio status panel. Not in the sidebar. |
 | Summaries › Audio › Link builder | Explains each part of the listening view's address and builds a link from checkboxes, with Copy and Open. |
-| Íslenskast, Topics, Summaries, Stats | Tables |
-| Components | A playground of the site's reusable pieces, live on real data, with one player at the top that every audio demo follows. **Audio:** a progress line (click, drag or arrow keys), waveform bars like a Spotify code, and the before/after view. **The talasaman.is image:** the pulsing logo (also in the sidebar title), the front-page image as a calm and an aggressive chorus (each bubble moves with its own pitch range), and the image taken apart into its eleven bubbles. **Maps:** a round lens that flies into the venues where the tables met (a black-and-white line map, a blue pin and the venue's name written under it), and the same lens ringed by the front-page image's bubbles, which breathe while all is quiet and swell with the recording. **Data:** the filterable table. |
+| Summaries › Groups | The summaries grouped by meaning within each topic (see Summary groups below): a map of meaning, tone across topics and a gallery of each topic's groups. Only the texts are used, never where they came from. |
+| Íslenskast, Topics, Stats | Tables |
+| Components | A playground of the site's reusable pieces, live on real data, with one player at the top that every audio demo follows. **Audio:** a progress line (click, drag or arrow keys), waveform bars like a Spotify code, the transcript lit word by word as it is spoken (on the page and in blue), and the before/after view. **The talasaman.is image:** the pulsing logo (also in the sidebar title), the front-page image as a calm and an aggressive chorus (each bubble moves with its own pitch range), and the image taken apart into its eleven bubbles. **Maps:** a round lens that flies into the venues where the tables met (a black-and-white line map, a blue pin and the venue's name written under it), and the same lens ringed by the front-page image's bubbles, which breathe while all is quiet and swell with the recording. **Data:** the filterable table. |
 
 Every page can also show its data as a table. Long tables get a filter under each column: a dropdown for columns with a few repeated values, and a search box for free text.
 
@@ -39,22 +41,22 @@ css/
   base.css              type, links, focus, reduced motion
   layout.css            sidebar, top bar, main column
   components.css        buttons, fold-outs, tables, legend, tooltip
-  components/           player, map (base map, pins, flag, zoom controls, lens), talasaman.is image, listening view
+  components/           player, map (base map, pins, flag, zoom controls, lens), talasaman.is image, listening view, transcript
   views/                one file per page
   style-samtal.css      the Samtal style: an override layer, every rule under data-style="samtal"
 js/
   main.js               start-up and routing (#/places …; a page can follow its own address in place, like #/listen/7?t=90)
   pages.js              the page list (subpages, hidden pages, pages that take a path)
-  lib/                  dom, geo (projection, boxes), map-view (zoom maths), map-pins, chorus-ring (bubbles round the lens), motion (tween, reduced motion), math, data (fetching), format, playback (following an <audio>), recordings, hash + listen-address (the listening view's address, read and written)
+  lib/                  dom, geo (projection, boxes), map-view (zoom maths), map-pins, chorus-ring (bubbles round the lens), motion (tween, reduced motion), math, data (fetching), format, playback (following an <audio>), recordings, hash + listen-address (the listening view's address, read and written), transcript (word timings)
   audio/                radio sound: the Web Audio chain, presets, controller, noise-reduction and expander worklets
-  components/           table + filters, audio player, player controls, play all, listening view, radio controls + visualiser, progress line, waveform bars, base map, map pin + flag, location zoom + its chorus, collapsible, tooltip, legend, raw links, sidebar, theme toggle
+  components/           table + filters, audio player, player controls, play all, icons, listening view, transcript, radio controls + visualiser, progress line, waveform bars, the talasaman.is image (hero, its visualisers, pulsing logo), base map, map pin + flag, location zoom + its chorus, count bars, radial bars, collapsible, tooltip, legend, raw links, subpage links, sidebar, theme + style toggles, audio debug panel
   views/
-    overview.js, endpoint.js, audio.js, listen.js, link-builder.js, components.js
+    overview.js, endpoint.js, summary-topics.js, audio.js, listen.js, link-builder.js, components.js
     circles/            postcode map, tables map + its layout
     places/             map stage, grouping, gestures, list, off-map places
     summary-groups/     Summaries › Groups: map of meaning, tone across topics, group gallery
-data/                   map polygons, the tables snapshot and the summary groups
-scripts/                update-tables.py, update-summary-groups.py
+data/                   map polygons, the tables snapshot, the summary groups and the transcript timings
+scripts/                serve.py (dev server), update-tables.py, update-summary-groups.py, align-transcripts.py, _common.py (their shared bits)
 ```
 
 Pure calculations, such as zoom maths, grouping and layout, live in their own modules with no DOM code.
@@ -68,6 +70,7 @@ Pure calculations, such as zoom maths, grouping and layout, live in their own mo
 | `data/iceland.geojson` | Coastline, glaciers, lakes and wide rivers, from LMÍ IS 50V |
 | `data/tables.json` | Event locations and their tables, from talasaman.is/hringir |
 | `data/summary-groups.json` | Summaries grouped by meaning, with tone and map positions (no locations) |
+| `data/transcript-timing.json` | When each word of a recorded summary is spoken (ids, times and a text hash only) |
 
 <details>
 <summary>How the map files were made</summary>
@@ -109,6 +112,13 @@ python3 -m venv .venv
 HF_HOME=.venv/hf .venv/bin/python scripts/update-summary-groups.py --report
 ```
 
+**Transcript timings.** Each recording is its summary read aloud, so the transcript can light up word by word as it plays (the Audio cards, the listening view, the Components page). The word timings aren't published, so `scripts/align-transcripts.py` computes them locally by CTC forced alignment with Reykjavík University's Icelandic wav2vec2 model ([language-and-voice-lab/wav2vec2-large-xlsr-53-icelandic-ep30-967h](https://huggingface.co/language-and-voice-lab/wav2vec2-large-xlsr-53-icelandic-ep30-967h)). It downloads and decodes each recording in a temp dir (needs `ffmpeg`), skips silent recordings and ones that don't match their text, and prints a quality line per recording. It stores only ids, times and a hash of the text, so a changed summary shows without highlighting until the script is run again.
+
+```bash
+.venv/bin/pip install --extra-index-url https://download.pytorch.org/whl/cpu torch transformers numpy scipy
+HF_HOME=.venv/hf .venv/bin/python scripts/align-transcripts.py
+```
+
 ## Themes and colours
 
 Both themes use talasaman.is's own colours. The page follows the browser's light/dark setting until someone uses the ☀/☾ toggle.
@@ -132,7 +142,7 @@ All colours live in `css/tokens.css`. The categorical colours `--accent-1` … `
 
 ## Accessibility
 
-- **Text contrast:** at least 7:1 (WCAG AAA) in both themes.
+- **Text contrast:** at least 7:1 (WCAG AAA) in both themes and both styles.
 - **Map marks and controls:** at least 3:1.
 - **Typography:** body text is 16 px at weight 400, and nothing is smaller than 13 px.
 - **Keyboard:** every control can be reached by keyboard and shows a visible focus outline.

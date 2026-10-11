@@ -5,6 +5,7 @@
 // Settings are remembered in localStorage. Moving any slider turns the
 // current preset into the "custom" one, which is stored in full.
 
+import { GESTURE_EVENTS } from '../lib/dom.js';
 import { STAGES, createRadioChain } from './radio-chain.js';
 import { PRESETS, DEFAULT_PRESET } from './presets.js';
 
@@ -77,23 +78,27 @@ function apply() {
   for (const { id } of STAGES) engine.chain.setStage(id, settings.on && settings.stages[id]);
 }
 
+let context = null;
+
+/** Resume the AudioContext if the browser left it suspended. */
+function wakeContext() {
+  if (context && context.state !== 'running') context.resume().catch(() => {});
+}
+
 /**
  * The AudioContext, created on first use. Phones (iOS Safari above all) only
  * let a context make sound if it is created or resumed during a tap, click
  * or key press itself — not after an await — so this runs synchronously in
  * the play handler, and any later gesture wakes it again (see below).
  */
-let context = null;
 function audioContext() {
   context ??= new AudioContext();
-  if (context.state !== 'running') context.resume().catch(() => {});
+  wakeContext();
   return context;
 }
 
 // A gesture anywhere wakes a context the browser left suspended.
-for (const type of ['pointerup', 'click', 'keydown']) { // a touch counts when the finger lifts
-  document.addEventListener(type, () => { if (context && context.state !== 'running') context.resume().catch(() => {}); }, true);
-}
+for (const type of GESTURE_EVENTS) document.addEventListener(type, wakeContext, true);
 
 /** What happened when the engine started, for audioStatus(). */
 const startup = { error: null, worklets: true };

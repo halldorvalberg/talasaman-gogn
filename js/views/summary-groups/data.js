@@ -32,10 +32,3 @@ export async function loadGroupData() {
     .map(([id, s]) => ({ id, ...s, text: texts.get(id) ?? '' }));
   return { topics: groups.topics, summaries, generatedAt: groups.generatedAt };
 }
-
-/** The first `max` characters of a text, cut at a word, with '…' if shortened. */
-export function excerpt(text, max = 200) {
-  if (text.length <= max) return text;
-  const cut = text.slice(0, max);
-  return `${cut.slice(0, cut.lastIndexOf(' ') > max * 0.6 ? cut.lastIndexOf(' ') : max).trimEnd()}…`;
-}

@@ -27,6 +27,17 @@ export function formatClock(seconds) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
+/**
+ * The first `max` characters of a text, cut at a word (unless that would lose
+ * over 40% of it), with '…' if shortened.
+ */
+export function excerpt(text, max = 200) {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${cut.slice(0, lastSpace > max * 0.6 ? lastSpace : max).trimEnd()}…`;
+}
+
 /** Where a table met: 'Fjölbrautaskóli Suðurlands · Borð 3'. */
 export const tableAt = ({ location, table }) => `${location} · Borð ${table}`;
 

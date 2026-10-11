@@ -1,11 +1,8 @@
-// Pure layout for Summaries › Groups: scales and a simple beeswarm. Numbers
-// in, numbers out; no DOM.
+// Pure layout for Summaries › Groups: a linear scale and a simple beeswarm.
+// Numbers in, numbers out; no DOM.
 
 /** A linear scale from [d0, d1] to [r0, r1]. */
 export const linear = (d0, d1, r0, r1) => (v) => r0 + ((v - d0) / (d1 - d0)) * (r1 - r0);
-
-/** v kept within [lo, hi]. */
-export const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
 /** Offsets 0, +1, −1, +2, −2 … times `step`. */
 function* alternating(step) {

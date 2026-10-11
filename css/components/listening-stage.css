@@ -41,6 +41,19 @@ body.stage-open .topbar { visibility: hidden; }
   font-size: clamp(0.9375rem, 2.2vmin, 1.125rem);
 }
 .stage-count { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+/* The summary being read (transcript-highlight.js): three lines that scroll
+   with the voice, two on short screens. */
+.stage-transcript {
+  max-width: 44rem;
+  margin: 0 auto 0.75rem;
+  font-size: clamp(1rem, 2.4vmin, 1.25rem);
+  line-height: 1.5;
+  text-align: center;
+  color: var(--ink);
+}
+/* It scrolls itself with the voice; a bar would push the centred text aside. */
+.stage-transcript.transcript-lines { scrollbar-width: none; }
+.stage-transcript:empty { display: none; }
 .stage-title { color: var(--ink); }
 .stage-controls {
   display: flex;
@@ -77,7 +90,7 @@ body.stage-open .topbar { visibility: hidden; }
   z-index: 1;
 }
 
-/* ---- Sound hint ---- */
+/* ---- Sound hint --------------------------------------------------------- */
 /* Shown while a directly opened link plays muted, until the first tap. */
 .stage-sound-hint {
   position: absolute;
@@ -97,7 +110,7 @@ body.stage-open .topbar { visibility: hidden; }
 }
 .stage-sound-hint[hidden] { display: none; }
 
-/* ---- Loading and error message ---- */
+/* ---- Loading and error message ------------------------------------------ */
 .stage-message {
   grid-template-rows: none;
   place-content: center;
@@ -112,10 +125,16 @@ body.stage-open .topbar { visibility: hidden; }
   .stage-time { margin-left: auto; }
 }
 
+/* Short screens: two lines of the transcript. */
+@media (max-height: 700px) {
+  .stage-transcript { --transcript-lines: 2; }
+}
+
 /* Short landscape (phone on its side): image left, player right. */
 @media (orientation: landscape) and (max-height: 560px) {
   .stage { grid-template-rows: minmax(0, 1fr); grid-template-columns: minmax(0, 1fr) minmax(15rem, 38%); gap: 1rem; }
   .stage-player { align-self: center; padding: 3.5rem 0 0; }
+  .stage-transcript { text-align: start; }
   .stage-line { flex-basis: 100%; order: -1; }
   .stage-time { margin-left: auto; }
 }

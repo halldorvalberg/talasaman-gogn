@@ -5,12 +5,12 @@
 // it with). The recordings come from /summaries, as on the Audio page.
 
 import { el } from '../lib/dom.js';
-import { recordingTitle } from '../lib/format.js';
+import { recordingTitle, formatClock } from '../lib/format.js';
 import { fetchRecordings } from '../lib/recordings.js';
 import { optionsFor } from '../components/table-filters.js';
 import { PRESETS, DEFAULT_PRESET } from '../audio/presets.js';
 import {
-  parseListenHash, buildListenHash, listenPlaylist, parseTime, formatTime, PRESET_CHOICES, NO_OPTIONS,
+  parseListenHash, buildListenHash, listenPlaylist, parseTime, PRESET_CHOICES, NO_OPTIONS,
 } from '../lib/listen-address.js';
 
 /** The link last built, so leaving to try it and coming back keeps the choices. */
@@ -79,7 +79,7 @@ function timeControl() {
   return {
     node: el('div', { className: 'lb-field' }, el('label', { htmlFor: input.id }, 'Start at'), input, hint),
     get: () => parseTime(input.value),
-    set: (seconds) => { input.value = formatTime(seconds); },
+    set: (seconds) => { input.value = formatClock(seconds); },
   };
 }
 

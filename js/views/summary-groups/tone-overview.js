@@ -7,7 +7,8 @@
 import { el, svgEl } from '../../lib/dom.js';
 import { createTooltip } from '../../components/tooltip.js';
 import { formatNumber } from '../../lib/format.js';
-import { linear, clamp, swarm } from './layout.js';
+import { clamp } from '../../lib/math.js';
+import { linear, swarm } from './layout.js';
 import { toneMark, toneCountsText, countTones, showSummaryTip } from './marks.js';
 
 const DOMAIN = 3;       // the axis runs from −3 to +3 standard deviations
@@ -44,6 +45,19 @@ function rowHead(topic, members, onPick) {
     el('span', { className: 'sg-row-counts' }, toneCountsText(countTones(members))));
 }
 
+/** The header row: the axis's ends and middle, in words. */
+const axisRow = () => el('div', { className: 'sg-row sg-axis-row', ariaHidden: 'true' }, el('span'),
+  el('div', { className: 'sg-axis' },
+    el('span', {}, '← more critical'), el('span', {}, 'neutral'), el('span', {}, 'more positive →')));
+
+/** One topic's row, with an empty holder its strip is drawn into (it needs the width). */
+function topicRow(topic, summaries, onPick) {
+  const members = summaries.filter((s) => s.topic === topic.name);
+  const holder = el('div', { className: 'sg-row-strip' });
+  const row = el('div', { className: 'sg-row' }, rowHead(topic, members, onPick), holder);
+  return { topic, members, holder, row };
+}
+
 /**
  * @param {object[]} topics from the groups file, in order
  * @param {object[]} summaries every summary with its topic, tone and toneScore
@@ -52,22 +66,12 @@ function rowHead(topic, members, onPick) {
 export function toneOverview(topics, summaries, onPick) {
   const tooltip = createTooltip();
   tooltip.element.classList.add('sg-tooltip');
-  const figure = el('div', { className: 'viz sg-tone' });
+  const rows = topics.map((topic) => topicRow(topic, summaries, onPick));
+  const figure = el('div', { className: 'viz sg-tone' }, axisRow(), ...rows.map((r) => r.row), tooltip.element);
   const onMark = (node, s) => {
     node.addEventListener('pointerenter', (e) => showSummaryTip(tooltip, e, s, figure));
     node.addEventListener('pointerleave', tooltip.hide);
   };
-  const rows = topics.map((topic) => {
-    const members = summaries.filter((s) => s.topic === topic.name);
-    const holder = el('div', { className: 'sg-row-strip' });
-    const row = el('div', { className: 'sg-row' }, rowHead(topic, members, onPick), holder);
-    return { topic, members, holder, row };
-  });
-  figure.append(
-    el('div', { className: 'sg-row sg-axis-row', ariaHidden: 'true' }, el('span'),
-      el('div', { className: 'sg-axis' },
-        el('span', {}, '← more critical'), el('span', {}, 'neutral'), el('span', {}, 'more positive →'))),
-    ...rows.map((r) => r.row), tooltip.element);
 
   return {
     element: figure,

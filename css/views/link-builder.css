@@ -14,7 +14,7 @@
 }
 .lb-parts td:nth-child(2) { min-width: 16rem; max-width: 39em; }
 .link-builder-page code {
-  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 0.875rem;
   color: var(--ink);
   overflow-wrap: anywhere;
@@ -104,7 +104,7 @@
 }
 .lb-link {
   min-height: 44px;
-  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
 }
 .lb-actions {
   display: flex;

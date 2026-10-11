@@ -52,7 +52,7 @@
     font-family: var(--font-display);
     font-size: 1.5rem;
     font-variation-settings: "opsz" 36;
-    line-height: 1.4;
+    line-height: 1.5;
     color: var(--ink-2);
   }
   & :is(.lede, .caption, .subpage-link, .demo-note) a {
@@ -62,7 +62,7 @@
   & :is(.lede, .caption, .subpage-link, .demo-note) a:hover { text-decoration-thickness: 2px; }
 }
 
-/* ---- Top bar: the sidebar laid out as a row ------------------------------ */
+/* ---- Top bar: the sidebar laid out as a row ----------------------------- */
 
 :root[data-style="samtal"] {
   & #sidebar {
@@ -355,7 +355,7 @@
   & :is(.lb-part, .lb-part:last-child) { border-color: var(--line); }
 }
 
-/* ---- Overview: tiles and the dataset index as cards ---------------------- */
+/* ---- Overview: tiles and the dataset index as cards --------------------- */
 
 :root[data-style="samtal"] {
   & .tiles {
@@ -414,7 +414,7 @@
   & .index span { font-size: 0.9375rem; color: var(--ink-2); }
 }
 
-/* ---- Audio: radio panel and recording cards ------------------------------ */
+/* ---- Audio: radio panel and recording cards ----------------------------- */
 
 :root[data-style="samtal"] {
   & .radio-panel {
@@ -497,7 +497,27 @@
   & .clip .player { order: 1; margin: 0.25rem 0 0; }
 }
 
-/* ---- Places: list cards, map controls, flag ------------------------------ */
+/* ---- Summaries › Groups: pills, rounded cards on surface ---------------- */
+
+:root[data-style="samtal"] {
+  & .sg-pill {
+    border: 1px solid var(--s-accent-edge);
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--s-accent);
+  }
+  & .sg-pill .sg-pill-count { color: var(--ink-3); }
+  & .sg-pill:hover { background: var(--s-accent-tint); color: var(--s-accent); }
+  & .sg-pill[aria-pressed="true"], & .sg-pill[aria-pressed="true"]:hover { background: var(--s-accent); color: var(--s-on-accent); border-color: var(--s-accent); }
+  & .sg-pill[aria-pressed="true"] .sg-pill-count { color: inherit; }
+  & .sg-card { border: 0; border-radius: 1rem; background: var(--s-surface); }
+  & .tone-seg { border-radius: 999px; }
+  & .meaning-map { border-color: var(--line); border-radius: 0.75rem; }
+  & .sg-gallery-title { font-size: 2rem; }
+}
+
+/* ---- Places: list cards, map controls, flag ----------------------------- */
 
 :root[data-style="samtal"] {
   & .places-list-head { border-bottom-color: var(--line); letter-spacing: 0.05em; }
@@ -533,7 +553,7 @@
   & .flag h3 { font-family: var(--font-display); font-size: 1.125rem; font-weight: 600; }
 }
 
-/* ---- Components playground: demo cards ----------------------------------- */
+/* ---- Components playground: demo cards ---------------------------------- */
 
 :root[data-style="samtal"] {
   & .playground-player {
@@ -561,7 +581,7 @@
   & .progress-dot { box-shadow: 0 0 0 2px var(--s-surface); }
 }
 
-/* ---- Listening view ------------------------------------------------------ */
+/* ---- Listening view ----------------------------------------------------- */
 
 :root[data-style="samtal"] {
   & .stage-button {

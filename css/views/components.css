@@ -23,6 +23,8 @@
 .demo-note { max-width: 39em; margin: -0.75rem 0 1.5rem; color: var(--ink-2); }
 .demo-caption { margin: 0 0 0.5rem; font-size: 0.875rem; color: var(--ink-3); }
 .demo-caption::first-letter { text-transform: uppercase; }
+/* Transcript demos: four lines that scroll with the voice, at a readable measure. */
+.demo-transcript { --transcript-lines: 4; max-width: 40rem; margin: 0; font-size: 1.125rem; line-height: 1.6; }
 
 /* ---- Player row and buttons --------------------------------------------- */
 

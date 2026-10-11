@@ -32,18 +32,15 @@ Run:
 --report prints each topic's groups (size, sentence, keywords, tone).
 """
 import argparse
-import json
 import re
-import urllib.request
 from collections import Counter
-from datetime import datetime, timezone
 from math import log
-from pathlib import Path
 
 import numpy as np
 
-SOURCE = "https://talasaman.is/api/v1/summaries"
-OUT = Path(__file__).resolve().parent.parent / "data" / "summary-groups.json"
+from _common import DATA, SUMMARIES_URL, fetch_summary_rows, utc_now, write_json
+
+OUT = DATA / "summary-groups.json"
 MODEL = "sentence-transformers/LaBSE"
 OTHER = "Annað"
 
@@ -56,6 +53,10 @@ DISTANCE_THRESHOLD = 0.55
 # |standardised tone| below this is neutral (talasaman.is uses 0.6 too);
 # that leaves roughly the middle half of the summaries neutral.
 NEUTRAL_BAND = 0.6
+METHOD = (f"LaBSE sentence embeddings; tone = projection on a positive-critical anchor axis, "
+          f"standardised, neutral within ±{NEUTRAL_BAND} SD; tone removed; per topic "
+          f"average-linkage clustering, cosine distance ≤ {DISTANCE_THRESHOLD}; "
+          f"singletons = Stakar; keywords = TF-IDF of BÍN lemmas; map = PCA.")
 MIN_SENTENCE_WORDS = 6
 MAX_SENTENCE_WORDS = 35  # a whole run-on paragraph makes a poor headline
 KEYWORDS = 5
@@ -124,7 +125,7 @@ FUNCTION_CLASSES = {"fn", "pfn", "fs", "st", "gr", "nhm", "to", "rt", "abfn"}
 
 def fetch_summaries():
     """The non-empty summaries, keeping only id, topic, topicChosen and text."""
-    rows = json.load(urllib.request.urlopen(SOURCE, timeout=60))["data"]
+    rows = fetch_summary_rows()
     return [{"id": r["id"], "topic": r["topic"].strip(), "chosen": bool(r["topicChosen"]),
              "text": r["summary"].strip()}
             for r in rows if (r.get("summary") or "").strip()]
@@ -290,11 +291,40 @@ def map_positions(vectors):
     return np.round(xy, 4)
 
 
-def topic_order(rows, set_topics):
+def topic_order(rows):
     """Set topics by number of summaries (most first), then Annað."""
     counts = Counter(r["group_topic"] for r in rows)
     named = sorted((t for t in counts if t != OTHER), key=lambda t: (-counts[t], t))
     return named + ([OTHER] if counts[OTHER] else [])
+
+
+def label_rows(rows, raw, axis):
+    """Give every row its tone (label and standardised score) and the topic it is grouped under."""
+    set_topics = {r["topic"].lower() for r in rows if r["chosen"]}
+    for r, score in zip(rows, standardise(raw @ axis)):
+        r["tone"], r["toneScore"] = tone_label(score), round(float(score), 3)
+        r["group_topic"] = topic_of(r, set_topics)
+
+
+def summary_entry(row, topic, group, point):
+    """One summary as stored: its topic, group, tone and place on the map, nothing else."""
+    return {"topic": topic, "group": group, "tone": row["tone"], "toneScore": row["toneScore"],
+            "x": float(point[0]), "y": float(point[1])}
+
+
+def group_all(model, axis, rows, vectors):
+    """Every topic's groups, in topic order, and every summary's entry by id."""
+    lemmatiser, topics, summaries = Lemmatiser(), [], {}
+    xy = map_positions(vectors)
+    for name in topic_order(rows):
+        idx = [i for i, r in enumerate(rows) if r["group_topic"] == name]
+        sub = [rows[i] for i in idx]
+        groups, stakar = topic_groups(model, axis, sub, vectors[idx], lemmatiser, name)
+        topics.append({"name": display_name(name), "count": len(sub), "groups": groups, "stakar": stakar})
+        group_of = {sid: g["id"] for g in groups for sid in g["summaries"]}
+        for i, r in zip(idx, sub):
+            summaries[r["id"]] = summary_entry(r, display_name(name), group_of.get(r["id"]), xy[i])
+    return topics, summaries
 
 
 def build(rows):
@@ -303,32 +333,12 @@ def build(rows):
     model = SentenceTransformer(MODEL)
     axis = tone_axis(model)
     raw = model.encode([r["text"] for r in rows], normalize_embeddings=True)
-    z = standardise(raw @ axis)
-    vectors = remove_component(raw, axis)
-    set_topics = {r["topic"].lower() for r in rows if r["chosen"]}
-    for r, score in zip(rows, z):
-        r["tone"], r["toneScore"] = tone_label(score), round(float(score), 3)
-        r["group_topic"] = topic_of(r, set_topics)
-
-    lemmatiser, topics, summaries = Lemmatiser(), [], {}
-    xy = map_positions(vectors)
-    for name in topic_order(rows, set_topics):
-        idx = [i for i, r in enumerate(rows) if r["group_topic"] == name]
-        sub = [rows[i] for i in idx]
-        groups, stakar = topic_groups(model, axis, sub, vectors[idx], lemmatiser, name)
-        topics.append({"name": display_name(name), "count": len(sub), "groups": groups, "stakar": stakar})
-        group_of = {sid: g["id"] for g in groups for sid in g["summaries"]}
-        for i, r in zip(idx, sub):
-            summaries[r["id"]] = {"topic": display_name(name), "group": group_of.get(r["id"]),
-                                  "tone": r["tone"], "toneScore": r["toneScore"],
-                                  "x": float(xy[i][0]), "y": float(xy[i][1])}
+    label_rows(rows, raw, axis)
+    topics, summaries = group_all(model, axis, rows, remove_component(raw, axis))
     return {
-        "source": SOURCE,
-        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "method": (f"LaBSE sentence embeddings; tone = projection on a positive-critical anchor axis, "
-                   f"standardised, neutral within ±{NEUTRAL_BAND} SD; tone removed; per topic "
-                   f"average-linkage clustering, cosine distance ≤ {DISTANCE_THRESHOLD}; "
-                   f"singletons = Stakar; keywords = TF-IDF of BÍN lemmas; map = PCA."),
+        "source": SUMMARIES_URL,
+        "generatedAt": utc_now(),
+        "method": METHOD,
         "topics": topics,
         "summaries": summaries,
     }
@@ -345,11 +355,12 @@ def print_report(data):
 
 
 def main():
+    """Group the summaries, write the file and say what came out (in full with --report)."""
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--report", action="store_true", help="print the groups per topic")
     args = parser.parse_args()
     data = build(fetch_summaries())
-    OUT.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n")
+    write_json(OUT, data)
     n_groups = sum(len(t["groups"]) for t in data["topics"])
     print(f"{len(data['summaries'])} summaries, {n_groups} groups -> {OUT.name} ({OUT.stat().st_size // 1024} KB)")
     if args.report:

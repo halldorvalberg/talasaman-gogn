@@ -1,5 +1,6 @@
-// A small box that follows the pointer over a map: a bold title and one detail
-// line. Append `element` inside a positioned container (position: relative).
+// A small box that follows the pointer over a map or chart: a bold title and
+// one detail line. Append `element` inside a positioned container
+// (position: relative).
 
 import { el } from '../lib/dom.js';
 
@@ -21,4 +22,13 @@ export function createTooltip() {
   const hide = () => { box.hidden = true; };
 
   return { element: box, show, hide };
+}
+
+/**
+ * Keep a shown tooltip inside `container`: shift it left when it would run
+ * past the right edge (it is placed to the right of the pointer).
+ */
+export function keepInside(box, container) {
+  const room = container.clientWidth - box.offsetWidth;
+  if (box.offsetLeft > room) box.style.left = `${Math.max(0, room)}px`;
 }

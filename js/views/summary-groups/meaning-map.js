@@ -5,11 +5,12 @@
 // Keyboard: focus the map and step through the highlighted topic's
 // summaries with the arrow keys; each is read out and shown in the tooltip.
 
-import { el, svgEl } from '../../lib/dom.js';
+import { el, svgEl, middleOnScreen } from '../../lib/dom.js';
+import { clamp } from '../../lib/math.js';
 import { createTooltip } from '../../components/tooltip.js';
 import { toneOf } from './data.js';
-import { linear, clamp } from './layout.js';
-import { toneMark, showSummaryTip, centreOf } from './marks.js';
+import { linear } from './layout.js';
+import { toneMark, showSummaryTip } from './marks.js';
 
 const PAD = 14;       // px round the plot, so edge marks stay whole
 const RADIUS = 6;     // half a mark's width, px
@@ -30,6 +31,37 @@ function spoken(summary, n, total) {
   return `${n} of ${total}. ${summary.topic}, ${toneOf(summary.tone).label}. ${summary.text}`;
 }
 
+/** Every summary's mark, placed on a plot of width × height px: { summary, node } in drawing order. */
+function placeMarks(summaries, width, height) {
+  const sx = linear(0, 1, PAD, width - PAD);
+  const sy = linear(0, 1, height - PAD, PAD);
+  return summaries.map((summary) => ({ summary, node: markFor(summary, sx(summary.x), sy(summary.y)) }));
+}
+
+/** Give an <svg> a size in px, with a viewBox to match. */
+function sizeSvg(svg, width, height) {
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.setAttribute('width', width);
+  svg.setAttribute('height', height);
+}
+
+/** The highlighted topic's marks, left to right: the keyboard's stepping order. */
+const stepsIn = (marks, topic) => marks.filter((m) => m.summary.topic === topic)
+  .sort((a, b) => a.summary.x - b.summary.x || a.summary.y - b.summary.y);
+
+const STEP_KEYS = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+
+/**
+ * The step a key moves keyboard focus to from step `focused` (-1: none yet),
+ * before wrapping round; -1 is the last. null for keys that don't step.
+ */
+function stepFor(key, focused) {
+  if (key in STEP_KEYS) return focused < 0 && STEP_KEYS[key] < 0 ? -1 : focused + STEP_KEYS[key];
+  if (key === 'Home') return 0;
+  if (key === 'End') return -1;
+  return null;
+}
+
 /**
  * @param {Array} summaries every summary ({ id, topic, tone, x, y, text })
  * @returns {{ element: HTMLElement, select(topic: string): void, redraw(): void }}
@@ -44,24 +76,16 @@ export function meaningMap(summaries) {
   let marks = []; // { summary, node } in drawing order
   let focused = -1;
 
-  /** The highlighted topic's marks, left to right: the keyboard's stepping order. */
-  const steps = () => marks.filter((m) => m.summary.topic === topic)
-    .sort((a, b) => a.summary.x - b.summary.x || a.summary.y - b.summary.y);
-
   function draw() {
     const width = figure.clientWidth;
     if (!width) return;
     const height = heightFor(width);
-    const sx = linear(0, 1, PAD, width - PAD);
-    const sy = linear(0, 1, height - PAD, PAD);
-    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-    svg.setAttribute('width', width);
-    svg.setAttribute('height', height);
-    marks = summaries.map((summary) => ({ summary, node: markFor(summary, sx(summary.x), sy(summary.y)) }));
-    marks.forEach(({ summary, node }) => {
+    sizeSvg(svg, width, height);
+    marks = placeMarks(summaries, width, height);
+    for (const { summary, node } of marks) {
       node.addEventListener('pointerenter', (e) => showSummaryTip(tooltip, e, summary, figure));
       node.addEventListener('pointerleave', tooltip.hide);
-    });
+    }
     svg.replaceChildren(...marks.map((m) => m.node));
     highlight();
   }
@@ -69,36 +93,33 @@ export function meaningMap(summaries) {
   /** Fade every topic but the chosen one and draw its marks on top. */
   function highlight() {
     for (const { summary, node } of marks) node.classList.toggle('is-dim', summary.topic !== topic);
-    svg.append(...marks.filter((m) => m.summary.topic === topic).map((m) => m.node));
-    const n = marks.filter((m) => m.summary.topic === topic).length;
-    svg.setAttribute('aria-label', `Map of meaning: ${summaries.length} summaries, ${n} about ${topic} highlighted. Use the arrow keys to read them one by one.`);
+    const chosen = marks.filter((m) => m.summary.topic === topic);
+    svg.append(...chosen.map((m) => m.node));
+    svg.setAttribute('aria-label', `Map of meaning: ${summaries.length} summaries, ${chosen.length} about ${topic} highlighted. Use the arrow keys to read them one by one.`);
   }
 
   /** Move keyboard focus to the i-th highlighted summary (wrapping). */
   function focusStep(i) {
-    const list = steps();
+    const list = stepsIn(marks, topic);
     if (!list.length) return;
     focused = (i + list.length) % list.length;
-    svg.querySelector('.is-focused')?.classList.remove('is-focused');
+    unfocusMark();
     const { summary, node } = list[focused];
     node.classList.add('is-focused');
-    showSummaryTip(tooltip, centreOf(node), summary, figure);
+    showSummaryTip(tooltip, middleOnScreen(node), summary, figure);
     live.textContent = spoken(summary, focused + 1, list.length);
   }
 
-  const KEYS = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+  const unfocusMark = () => svg.querySelector('.is-focused')?.classList.remove('is-focused');
+
   svg.addEventListener('keydown', (e) => {
-    if (e.key in KEYS) focusStep(focused < 0 && KEYS[e.key] < 0 ? -1 : focused + KEYS[e.key]);
-    else if (e.key === 'Home') focusStep(0);
-    else if (e.key === 'End') focusStep(-1);
+    const step = stepFor(e.key, focused);
+    if (step !== null) focusStep(step);
     else if (e.key === 'Escape') tooltip.hide();
     else return;
     e.preventDefault();
   });
-  svg.addEventListener('blur', () => {
-    tooltip.hide();
-    svg.querySelector('.is-focused')?.classList.remove('is-focused');
-  });
+  svg.addEventListener('blur', () => { tooltip.hide(); unfocusMark(); });
 
   return {
     element: figure,

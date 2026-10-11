@@ -10,6 +10,8 @@ import { buildListenHash } from '../lib/listen-address.js';
 import { plural } from '../lib/format.js';
 import { filterControl, rowPasses } from '../components/table-filters.js';
 import { audioPlayer } from '../components/audio-player.js';
+import { createTranscript } from '../components/transcript-highlight.js';
+import { loadTranscriptTimings } from '../lib/transcript.js';
 import { radioControls } from '../components/radio-controls.js';
 import { playAllButton } from '../components/play-all.js';
 import { rawLinks } from '../components/raw-links.js';
@@ -24,14 +26,20 @@ const FILTERS = [
   { column: 'summary', kind: 'search', label: 'Search summaries' },
 ];
 
-/** One recording: what the table talked about, where (the place, not the table), the clip and the summary. */
-function clipCard(row) {
+/**
+ * One recording: what the table talked about, where (the place, not the
+ * table), the clip and the summary, whose words light up as they are spoken
+ * when `timing` (its transcript-timing.json entry) fits.
+ */
+function clipCard(row, timing) {
   const where = row.location;
+  const audio = audioPlayer(row.audio, `Recording: ${row.topic}, ${where}`);
+  const summary = createTranscript(audio, { text: row.summary, timing, className: 'clip-summary' });
   return el('article', { className: 'clip' },
     el('h2', { className: 'clip-topic' }, row.topic),
     el('p', { className: 'clip-where' }, where),
-    audioPlayer(row.audio, `Recording: ${row.topic}, ${where}`),
-    el('p', { className: 'clip-summary' }, row.summary));
+    audio,
+    summary.element);
 }
 
 /** The filter bar; calls onChange with the active filters after every change. */
@@ -62,8 +70,8 @@ const queryOf = (filters, column) => filters.find((f) => f.column === column).qu
 
 /** Cards for every clip, with filters and a live count, once the data arrives. */
 async function fillClips(container, onFilter) {
-  const rows = await fetchRecordings();
-  const cards = rows.map((row) => ({ row, card: clipCard(row) }));
+  const [rows, timings] = await Promise.all([fetchRecordings(), loadTranscriptTimings()]);
+  const cards = rows.map((row) => ({ row, card: clipCard(row, timings[row.id]) }));
   const status = el('p', { className: 'table-status', role: 'status' }, recordings(rows.length));
 
   const bar = filterBar(rows, (filters) => {

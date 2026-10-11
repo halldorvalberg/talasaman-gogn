@@ -4,8 +4,11 @@
 
 import { fetchEndpoint } from './data.js';
 
+/** The rows of /summaries that come with a recording, in order. */
+export const recordingsOf = (rows) => rows.filter((row) => row.audio);
+
 /** Fetch the summaries that come with a recording. */
 export async function fetchRecordings() {
   const { data } = await fetchEndpoint('summaries');
-  return data.filter((row) => row.audio);
+  return recordingsOf(data);
 }

@@ -6,10 +6,13 @@
 import { el } from '../lib/dom.js';
 import { fetchEndpoint, loadJsonOnce } from '../lib/data.js';
 import { plural, people, recordingTitle, compareIcelandic } from '../lib/format.js';
+import { randomIndex, randomOf } from '../lib/math.js';
+import { recordingsOf } from '../lib/recordings.js';
 import { recordingAudio } from '../components/audio-player.js';
 import { playButton, audioPlayback, timeReadout } from '../components/player-controls.js';
 import { createProgressLine } from '../components/progress-line.js';
 import { createWaveformBars } from '../components/waveform-bars.js';
+import { recordingTranscript } from '../components/transcript-highlight.js';
 import { createLocationZoom } from '../components/location-zoom.js';
 import { radioVisualizer } from '../components/radio-visualizer.js';
 import { logoPulse } from '../components/logo-pulse.js';
@@ -38,12 +41,13 @@ const group = (title, ...demos) =>
   el('section', { className: 'playground-group' }, el('h2', {}, title), ...demos);
 
 /**
- * The first recording, as the <audio> every audio demo shares. It joins the
+ * A random recording, as the <audio> every audio demo shares. It joins the
  * radio chain, so the visualisers can hear it (and Radio sound applies).
+ * `rows` is every summary, for the table demo.
  */
 async function loadClip() {
   const { data } = await fetchEndpoint('summaries');
-  const recordings = data.filter((r) => r.audio);
+  const recordings = recordingsOf(data);
   if (!recordings.length) throw new Error('No recordings available');
   let row = randomOf(recordings);
   const audio = recordingAudio({ src: row.audio, preload: 'metadata' });
@@ -57,12 +61,6 @@ async function loadClip() {
     if (wasPlaying) audio.play();
   };
   return { audio, caption, shuffle, rows: data };
-}
-
-/** A random item of `items`, other than `not` when there is a choice. */
-function randomOf(items, not = null) {
-  const choices = items.length > 1 ? items.filter((item) => item !== not) : items;
-  return choices[Math.floor(Math.random() * choices.length)];
 }
 
 /** The bar at the top: what is playing, play/pause, another recording, a progress line and the time. */
@@ -119,6 +117,13 @@ async function waveformDemo(clip) {
   return [bars.element];
 }
 
+/** The shared recording's summary, lit word by word as it plays; it follows "Another recording". */
+async function transcriptDemo(clip, tone = 'page') {
+  const { audio, rows } = await clip;
+  const transcript = recordingTranscript(audio, rows, { tone, className: 'demo-transcript transcript-lines' });
+  return [transcript.element];
+}
+
 /** A meeting venue from data/tables.json, as a location for the zoom: what met there. */
 const venueLocation = (venue) => ({
   name: venue.name,
@@ -156,7 +161,7 @@ async function loadVenues() {
 function venueControls(venues, lens) {
   const { select, field } = venuePicker(venues, (venue) => lens.showLocation(venue));
   const pickRandom = () => {
-    select.value = Math.floor(Math.random() * venues.length);
+    select.value = randomIndex(venues.length);
     lens.showLocation(venues[select.value]);
   };
   const random = el('button', { className: 'demo-button' }, 'Random venue');
@@ -174,8 +179,10 @@ async function zoomDemo() {
   return [venueControls(venues, lens), lens.element];
 }
 
-/** The location zoom in the middle of the talasaman.is image's bubbles, which move with the recording. */
-/** The chorus zoom in a tone ('line' or 'blue'), with its venue picker. */
+/**
+ * The location zoom in the middle of the talasaman.is image's bubbles, which
+ * move with the recording, in a tone ('line' or 'blue'), with its venue picker.
+ */
 async function chorusZoomDemo(tone = 'line') {
   const { base, venues } = await loadVenues();
   const chorus = chorusZoom(base, { tone });
@@ -200,6 +207,13 @@ function audioGroup(clip) {
     demo('Waveform bars',
       'The loudness of the recording as rounded bars, like a Spotify code. Bars turn blue as playback passes them.',
       () => waveformDemo(clip)),
+    demo('Transcript',
+      'The summary that is read on the recording, word by word: the word being spoken turns blue, then fades to the text colour once said; ' +
+      `words still to come are quieter. Click a word to jump there. The box scrolls itself to keep the current line in view. ${PLAY_FIRST}`,
+      () => transcriptDemo(clip)),
+    demo('Transcript, blue',
+      `The same in white on deep blue, to sit with the blue chorus and lens: words to come dimmer, the current word bright white on a lighter blue. ${PLAY_FIRST}`,
+      () => transcriptDemo(clip, 'blue')),
     demo('Before and after',
       `The level and spectrum of the original against the cleaned-up "Radio sound" (set on the Audio page). ${PLAY_FIRST}`,
       () => [radioVisualizer()]));

@@ -82,7 +82,7 @@ export function createLocationZoom(base, { zoom = LANDING_ZOOM, duration = FLIGH
   const svg = drawBaseMap(base, frame);
   const pin = pinMarker();
   const label = mapLabel();
-  const status = el('p', { className: 'lens-status', role: 'status' }); // read out on landing
+  const status = el('p', { className: 'lens-status visually-hidden', role: 'status' }); // read out on landing, not shown: the label is on the map
   const lens = el('div', { className: 'location-lens' }, svg, pin, label.element);
   const stage = el('div', { className: 'location-zoom' }, lens, status);
   let view = HOME;

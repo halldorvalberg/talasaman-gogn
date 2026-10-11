@@ -1,17 +1,19 @@
 // The listening view: a full-screen stage, shown by the #/listen route
 // (views/listen.js). The front-page image moves with the voice as a chorus
 // (aggressive or calm), and a player underneath goes through the recordings
-// in turn, starting over after the last unless told to stop there. Esc or
-// the close button leaves it; it fits any screen in either orientation (see
+// in turn, starting over after the last unless told to stop there; above the
+// player, the summary being read lights up word by word. Esc or the close
+// button leaves it; it fits any screen in either orientation (see
 // css/components/listening-stage.css). It starts playing at once; when the
 // browser refuses sound before a click, it plays muted until the first tap.
 
-import { el } from '../lib/dom.js';
+import { el, GESTURE_EVENTS } from '../lib/dom.js';
 import { recordingTitle } from '../lib/format.js';
 import { recordingAudio } from './audio-player.js';
 import { playButton, audioPlayback, timeReadout, PLAY_PAUSE_ICON } from './player-controls.js';
 import { createProgressLine } from './progress-line.js';
 import { heroChorus } from './hero-visualisers.js';
+import { recordingTranscript } from './transcript-highlight.js';
 import { icon } from './icons.js';
 
 const RESTART_WITHIN = 3; // s: "previous" restarts the recording if further in than this
@@ -34,6 +36,12 @@ function trapTab(event, root) {
   if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
   else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
 }
+
+/** A keydown handler for the stage: Esc closes; Tab goes round its own controls only (it is modal). */
+const stageKeys = (stage, onClose) => (event) => {
+  if (event.key === 'Escape') onClose();
+  else if (event.key === 'Tab') trapTab(event, stage);
+};
 
 /** `seconds`, kept inside the recording (its length must be known). */
 const withinRecording = (audio, seconds) => Math.max(0, Math.min(seconds, audio.duration - 1));
@@ -92,9 +100,7 @@ function createPlaylist(rows, { onTrackChange, onBlocked }) {
  */
 function soundUnlock(audio) {
   const hint = el('p', { className: 'stage-sound-hint', role: 'status', hidden: true });
-  // A touch only counts as a gesture when the finger lifts (pointerup / click), not on touch-down.
-  const GESTURES = ['pointerup', 'click', 'keydown'];
-  const stop = () => GESTURES.forEach((type) => document.removeEventListener(type, unmute, true));
+  const stop = () => GESTURE_EVENTS.forEach((type) => document.removeEventListener(type, unmute, true));
   function unmute() {
     stop();
     audio.muted = false;
@@ -106,17 +112,18 @@ function soundUnlock(audio) {
     hint.textContent = 'Tap anywhere for sound';
     audio.play().catch(() => { hint.textContent = 'Tap anywhere to start'; }); // some browsers refuse even muted
     hint.hidden = false;
-    GESTURES.forEach((type) => document.addEventListener(type, unmute, true));
+    GESTURE_EVENTS.forEach((type) => document.addEventListener(type, unmute, true));
   }
   return { element: hint, onBlocked, stop };
 }
 
-/** The stage's markup: close button, the moving image, the player and the sound hint. */
-function stageElement({ playlist, playPause, line, time, art, hint, close }) {
+/** The stage's markup: close button, the moving image, the transcript over the player, and the sound hint. */
+function stageElement({ playlist, playPause, line, time, art, transcript, hint, close }) {
   return el('div', { className: 'stage', role: 'dialog', ariaModal: 'true', ariaLabel: 'Listening view' },
     stageButton('close', 'Close the listening view', close, 'stage-close'),
     art,
     el('div', { className: 'stage-player' },
+      transcript.element,
       el('p', { className: 'stage-now', ariaLive: 'polite' }, playlist.count, playlist.title),
       el('div', { className: 'stage-controls' },
         stageButton('previous', 'Previous recording', playlist.previous),
@@ -157,18 +164,15 @@ export function mountListeningStage(container, { rows, start = 0, startAt = null
   const time = timeReadout(audio, 'stage-time');
   const playPause = playButton(audioPlayback(audio), { className: 'stage-button stage-play', look: PLAY_PAUSE_ICON });
   const art = el('div', { className: 'stage-art' }, chorusArt(mood));
-  const stage = stageElement({ playlist, playPause, line, time, art, hint: sound.element, close: onClose });
-
-  /** Esc closes; Tab goes round the stage's own controls only (it is modal). */
-  function onKey(event) {
-    if (event.key === 'Escape') onClose();
-    else if (event.key === 'Tab') trapTab(event, stage);
-  }
+  const transcript = recordingTranscript(audio, rows, { className: 'stage-transcript transcript-lines' });
+  const stage = stageElement({ playlist, playPause, line, time, art, transcript, hint: sound.element, close: onClose });
+  const onKey = stageKeys(stage, onClose);
 
   function destroy() {
     sound.stop();
     audio.pause();
     time.stop();
+    transcript.stop();
     line.disconnect();
     document.removeEventListener('keydown', onKey);
     document.body.classList.remove('stage-open');
