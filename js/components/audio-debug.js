@@ -2,7 +2,8 @@
 // why a visualiser stands still on some device: is the page secure, did the
 // engine start, is the AudioContext running, does any sound reach the
 // visualisers, and is reduced motion on. Shown when the address has
-// ?debug=1 (e.g. #/listen?debug=1).
+// ?debug=1 (e.g. #/listen?debug=1). It also lists any JavaScript errors
+// the page hits, so a failure on a phone can be read off the screen.
 
 import { el } from '../lib/dom.js';
 import { audioStatus } from '../audio/radio.js';
@@ -10,6 +11,14 @@ import { onLevel } from '../audio/level-meter.js';
 import { reducedMotion } from '../lib/motion.js';
 
 const REFRESH = 500; // ms between updates
+
+const errors = [];
+
+/** Keep every uncaught error and rejected promise, for the panel. */
+function collectErrors() {
+  window.addEventListener('error', (e) => errors.push(`${e.message} (${String(e.filename).split('/').pop()}:${e.lineno})`));
+  window.addEventListener('unhandledrejection', (e) => errors.push(`Promise: ${e.reason?.message ?? e.reason}`));
+}
 
 /** The panel's lines for the current state; `level` is the visualisers' 0…1 input. */
 function statusLines(level) {
@@ -22,13 +31,15 @@ function statusLines(level) {
     ['Noise stages loaded', s.worklets],
     ['Level reaching visualisers', level === null ? 'nothing yet' : level.toFixed(2)],
     ['Reduced motion (keeps visualisers still)', reducedMotion.matches],
-    ['Error', s.error ?? 'none'],
+    ['Engine error', s.error ?? 'none'],
+    ['Page errors', errors.length ? errors.slice(-5).join(' · ') : 'none'],
     ['Browser', navigator.userAgent],
   ];
 }
 
 /** Start showing the panel at the bottom of the page. */
 export function showAudioDebug() {
+  collectErrors();
   const list = el('dl', {});
   const panel = el('aside', { className: 'audio-debug', ariaLabel: 'Audio debug' }, el('h2', {}, 'Audio debug'), list);
   let level = null;
@@ -37,5 +48,5 @@ export function showAudioDebug() {
     [el('dt', {}, name), el('dd', {}, String(value))]));
   render();
   setInterval(render, REFRESH);
-  document.body.append(panel);
+  document.body.append(panel); // the script runs at the end of <body>, so it exists
 }

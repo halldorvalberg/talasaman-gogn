@@ -24,7 +24,7 @@ Every page can also show its data as a table. Long tables get a filter under eac
 There's no build step. The site uses ES modules and loads files from `data/`, so serve the folder rather than opening `index.html` directly:
 
 ```bash
-python3 -m http.server 8001   # then open http://localhost:8001
+python3 scripts/serve.py      # then open http://localhost:8001 (never cached, so a reload always gets the latest code)
 ```
 
 Pushing to `main` deploys to GitHub Pages.

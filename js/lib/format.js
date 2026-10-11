@@ -30,5 +30,8 @@ export function formatClock(seconds) {
 /** Where a table met: 'Fjölbrautaskóli Suðurlands · Borð 3'. */
 export const tableAt = ({ location, table }) => `${location} · Borð ${table}`;
 
-/** A summary recording's title: 'gervigreind · Fjölbrautaskóli Suðurlands · Borð 3'. */
-export const recordingTitle = (row) => `${row.topic} · ${tableAt(row)}`;
+/**
+ * A summary recording's title: 'gervigreind · Fjölbrautaskóli Suðurlands'.
+ * The place but not the table, so a recording can't be traced to one table.
+ */
+export const recordingTitle = (row) => `${row.topic} · ${row.location}`;

@@ -6,7 +6,7 @@
 
 import { el } from '../lib/dom.js';
 import { fetchRecordings } from '../lib/recordings.js';
-import { parseListenHash, buildListenHash, listenPlaylist, DEFAULT_MOOD } from '../lib/listen-address.js';
+import { parseListenHash, buildListenHash, listenPlaylist, indexOfRecording, DEFAULT_MOOD } from '../lib/listen-address.js';
 import { updateRadio } from '../audio/radio.js';
 import { mountListeningStage } from '../components/listening-stage.js';
 
@@ -96,9 +96,9 @@ export function listenPage(page, pages, route) {
  */
 function updateStage(state, before, mount) {
   const now = state.options;
-  if (filtersDiffer(now, before)) { mount(); return; }
+  if (filtersDiffer(now, before) || now.shuffle !== before.shuffle) { mount(); return; }
   if (now.mood !== before.mood) state.stage.setMood(now.mood ?? DEFAULT_MOOD);
   if (now.loop !== before.loop) state.stage.setLoop(now.loop ?? true);
-  if (now.recording !== before.recording) state.stage.jump(listenPlaylist(state.rows, now).start, now.t);
+  if (now.recording !== before.recording) state.stage.jump(indexOfRecording(state.entries, now.recording ?? 1), now.t);
   else if (now.t !== null && now.t !== before.t) state.stage.seek(now.t);
 }

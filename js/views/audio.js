@@ -7,7 +7,7 @@ import { icon } from '../components/icons.js';
 import { el } from '../lib/dom.js';
 import { fetchRecordings } from '../lib/recordings.js';
 import { buildListenHash } from '../lib/listen-address.js';
-import { plural, tableAt } from '../lib/format.js';
+import { plural } from '../lib/format.js';
 import { filterControl, rowPasses } from '../components/table-filters.js';
 import { audioPlayer } from '../components/audio-player.js';
 import { radioControls } from '../components/radio-controls.js';
@@ -24,9 +24,9 @@ const FILTERS = [
   { column: 'summary', kind: 'search', label: 'Search summaries' },
 ];
 
-/** One recording: what the table talked about, where, the clip and the summary. */
+/** One recording: what the table talked about, where (the place, not the table), the clip and the summary. */
 function clipCard(row) {
-  const where = tableAt(row);
+  const where = row.location;
   return el('article', { className: 'clip' },
     el('h2', { className: 'clip-topic' }, row.topic),
     el('p', { className: 'clip-where' }, where),

@@ -72,6 +72,8 @@ function route() {
   window.scrollTo(0, 0);
 }
 
+// First, so it shows (and lists errors) even if something below fails. e.g. #/listen?debug=1
+if (splitHash(location.hash).query.has('debug')) showAudioDebug();
 setupSidebar();
 document.getElementById('brand-mark').replaceWith(logoPulse({ className: 'brand-mark' }));
 setupThemeToggle();
@@ -79,4 +81,3 @@ setupStyleToggle(followStyle);
 buildNav();
 window.addEventListener('hashchange', route);
 route();
-if (splitHash(location.hash).query.has('debug')) showAudioDebug(); // e.g. #/listen?debug=1

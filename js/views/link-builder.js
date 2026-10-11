@@ -27,6 +27,7 @@ const partRows = (example) => [
   ['preset', 'Radio sound: clear, natural or radio, or off to switch it off. Remembered afterwards, like the Audio page\'s switch.', '#/listen?preset=natural'],
   ['mood', 'How the image moves with the voice: calm, or aggressive (the default).', '#/listen?mood=calm'],
   ['loop', 'loop=0 stops after the last recording; by default it starts over.', '#/listen?loop=0'],
+  ['shuffle', 'shuffle=0 plays in the Audio page\'s order; by default the order is new and random each time the link is opened (starting from the recording number, if given).', '#/listen?shuffle=0'],
 ];
 
 /** The table explaining each part, with examples drawn from the recordings. */
@@ -82,7 +83,7 @@ function timeControl() {
   };
 }
 
-/** Picks a recording, listing those the chosen topic and location leave ('7 · topic · place · Borð 2'). */
+/** Picks a recording, listing those the chosen topic and location leave ('7 · topic · place'). */
 function recordingControl(rows) {
   const control = selectControl('lb-recording', 'Recording', []);
   /** List the recordings that `filters` ({ topic, location }) leave, keeping the choice if it is still there. */
@@ -118,6 +119,7 @@ function partControls(rows) {
     preset: { label: 'Radio sound (preset)', control: radioControl('lb-preset', 'Radio sound', PRESET_CHOICES.map((id) => [id, presetLabel(id)]), DEFAULT_PRESET) },
     mood: { label: 'Chorus (mood)', control: radioControl('lb-mood', 'Chorus', [['calm', 'Calm'], ['aggressive', 'Aggressive']], 'calm') },
     loop: { label: 'After the last (loop)', control: booleanRadios('lb-loop', 'After the last recording', ['Start over', 'Stop'], false) },
+    shuffle: { label: 'Order (shuffle)', control: booleanRadios('lb-shuffle', 'Order', ['Random', 'Audio page order'], false) },
   };
 }
 

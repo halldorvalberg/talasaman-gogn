@@ -26,7 +26,10 @@
 @media (max-width: 1000px) {
   .places-layout { flex-direction: column; }
   .places-stage { width: min(100%, calc((100vh - 6rem) * var(--ratio, 1.4))); }
-  .places-list-wrap { height: 60vh; }
+  /* Stacked: a fixed height, not flex's grow-from-0, which left the list 0px
+     tall (the base .places-list-wrap rule comes later in this file, hence
+     the extra .places-layout). */
+  .places-layout .places-list-wrap { flex: none; height: 60vh; }
 }
 
 /* ---- Legend keys ------------------------------------------------------- */

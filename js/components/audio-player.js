@@ -25,7 +25,7 @@ export function recordingAudio(props) {
 /**
  * A native player for one recording.
  * @param {string} src audio URL
- * @param {string} label accessible name, e.g. "Recording: gervigreind, Borð 3"
+ * @param {string} label accessible name, e.g. "Recording: gervigreind, Tækniskólinn"
  */
 export function audioPlayer(src, label) {
   const audio = recordingAudio({ src, controls: true, preload: 'none', ariaLabel: label, className: 'player' });

@@ -2,11 +2,12 @@
 // route (views/listen.js) and the link builder (views/link-builder.js) can
 // never disagree. Pure: no DOM.
 //
-//   #/listen/7?t=1:30&topic=…&location=…&preset=clear&mood=calm&loop=0
+//   #/listen/7?t=1:30&topic=…&location=…&preset=clear&mood=calm&loop=0&shuffle=0
 //
 // Every part is optional. Anything missing or not understood reads as null,
-// which means "the default": the first recording, from the start, all
-// recordings, the current Radio sound setting, the aggressive chorus, looping.
+// which means "the default": all recordings in a new random order each time
+// (from the given recording, if any), from the start, the current Radio
+// sound setting, the aggressive chorus, looping.
 
 import { splitHash } from './hash.js';
 import { formatClock } from './format.js';
@@ -34,11 +35,12 @@ const TEXT_PARTS = ['topic', 'location', 'preset', 'mood'];
  * @property {string|null} preset one of PRESET_CHOICES
  * @property {string|null} mood one of MOODS
  * @property {boolean|null} loop false: stop after the last recording
+ * @property {boolean|null} shuffle false: play in the Audio page's order instead of a random one
  */
 
 /** Options with nothing set: the whole listening view with its defaults. */
 export const NO_OPTIONS = Object.freeze({
-  recording: null, t: null, topic: null, location: null, preset: null, mood: null, loop: null,
+  recording: null, t: null, topic: null, location: null, preset: null, mood: null, loop: null, shuffle: null,
 });
 
 /** '7' → 7; anything but a whole number of 1 or more → null. */
@@ -56,7 +58,7 @@ function oneOf(text, choices) {
 const textOrNull = (text) => text?.trim() || null;
 
 /** '0' / 'false' / 'no' / 'off' → false; '1' / 'true' / 'yes' / 'on' → true; else null. */
-function parseLoop(text) {
+function parseSwitch(text) {
   const lower = text?.trim().toLowerCase();
   if (['0', 'false', 'no', 'off'].includes(lower)) return false;
   if (['1', 'true', 'yes', 'on'].includes(lower)) return true;
@@ -87,7 +89,8 @@ export function parseListenHash(hash) {
     location: textOrNull(query.get('location')),
     preset: oneOf(query.get('preset'), PRESET_CHOICES),
     mood: oneOf(query.get('mood'), MOODS),
-    loop: parseLoop(query.get('loop')),
+    loop: parseSwitch(query.get('loop')),
+    shuffle: parseSwitch(query.get('shuffle')),
   };
 }
 
@@ -102,13 +105,14 @@ const encodePart = (value) => encodeURIComponent(value).replace(ENCODED_LETTER, 
 
 /** Write options as a hash; null fields are left out. Inverse of parseListenHash. */
 export function buildListenHash(options) {
-  const { recording, t, loop } = { ...NO_OPTIONS, ...options };
+  const { recording, t, loop, shuffle } = { ...NO_OPTIONS, ...options };
   const params = [];
   if (t !== null) params.push(`t=${formatTime(t)}`);
   for (const part of TEXT_PARTS) {
     if (options[part]) params.push(`${part}=${encodePart(options[part])}`);
   }
   if (loop !== null) params.push(`loop=${loop ? 1 : 0}`);
+  if (shuffle !== null) params.push(`shuffle=${shuffle ? 1 : 0}`);
   const path = recording ? `#/${LISTEN_ID}/${recording}` : `#/${LISTEN_ID}`;
   return params.length ? `${path}?${params.join('&')}` : path;
 }
@@ -120,22 +124,49 @@ const sameText = (a, b) =>
 /** Does `row` match every filter in `filters` ([column, value] pairs)? */
 const matchesAll = (row, filters) => filters.every(([column, value]) => sameText(row[column], value));
 
+/** A copy of `items` in random order (Fisher–Yates); `random` returns 0…1. */
+export function shuffled(items, random = Math.random) {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
 /**
- * The recordings an address plays, and which of them to start with.
+ * The recordings an address plays, in playing order, and which to start with.
  * Filters naming a topic or location no recording has are ignored, and if
  * the filters together leave nothing, every recording plays. The recording
  * number counts in `rows` (the Audio page's order); if that one is filtered
- * out, the next one that isn't starts (the last, past the end).
+ * out, the next one that isn't starts (the last, past the end). Unless
+ * shuffle is false, the order is new and random each time, beginning with
+ * the asked-for recording if there is one.
  * @param {object[]} rows every recording, in the Audio page's order
  * @param {ListenOptions} options
+ * @param {() => number} [random] for shuffling (tests can pass a fixed one)
  * @returns {{ entries: { row: object, number: number }[], start: number }} start indexes entries
  */
-export function listenPlaylist(rows, { recording, topic, location }) {
+export function listenPlaylist(rows, { recording, topic, location, shuffle }, random = Math.random) {
   const numbered = rows.map((row, i) => ({ row, number: i + 1 }));
   const filters = [['topic', topic], ['location', location]]
     .filter(([column, value]) => value && rows.some((row) => sameText(row[column], value)));
   const passing = numbered.filter(({ row }) => matchesAll(row, filters));
   const entries = passing.length ? passing : numbered;
-  const after = entries.findIndex(({ number }) => number >= (recording ?? 1));
-  return { entries, start: after === -1 ? Math.max(entries.length - 1, 0) : after };
+  const start = indexOfRecording(entries, recording ?? 1);
+  if (shuffle === false) return { entries, start };
+  const rest = shuffled(entries.filter((_, i) => i !== start), random);
+  return { entries: recording ? [entries[start], ...rest] : shuffled(entries, random), start: 0 };
+}
+
+/**
+ * Where recording number `recording` is in `entries`: that one, else the next
+ * one after it, else the last.
+ */
+export function indexOfRecording(entries, recording) {
+  const exact = entries.findIndex(({ number }) => number === recording);
+  if (exact !== -1) return exact;
+  const after = entries.reduce((best, { number }, i) =>
+    (number > recording && (best === -1 || number < entries[best].number) ? i : best), -1);
+  return after === -1 ? Math.max(entries.length - 1, 0) : after;
 }
