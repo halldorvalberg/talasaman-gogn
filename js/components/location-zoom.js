@@ -52,7 +52,7 @@ function placeAt(node, x, y) {
  */
 function mapLabel() {
   const name = el('span', { className: 'lens-label-name' });
-  const text = el('span', { className: 'lens-label-text' });
+  const text = el('span', { className: 'lens-label-text', hidden: true });
   const element = el('div', { className: 'lens-label', hidden: true }, name, text);
   element.setAttribute('aria-hidden', 'true');
   return {
@@ -60,6 +60,7 @@ function mapLabel() {
     show(location) {
       name.textContent = location.name;
       text.textContent = location.text ?? '';
+      text.hidden = !location.text; // no empty line when there are no details
       element.hidden = false;
       replayClass(element, 'appear');
     },

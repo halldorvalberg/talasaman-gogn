@@ -47,6 +47,7 @@ svg.measure { position: absolute; width: 0; height: 0; visibility: hidden; }
   width: min(100%, 46rem);
   aspect-ratio: var(--ring-aspect, 1);
 }
+.chorus-zoom-aggressive { margin: 3rem auto; width: min(100% - 4rem, 46rem); } /* room for the bubbles to jolt outward */
 .chorus-ring {
   position: absolute;
   inset: 0;

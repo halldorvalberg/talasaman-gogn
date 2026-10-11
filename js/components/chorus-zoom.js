@@ -41,8 +41,8 @@ function fitLens(figure, frame, { cx, cy, r }) {
   figure.style.setProperty('--lens-size', percent((2 * r) / frame.w));
 }
 
-/** Ring the lens with the image's bubbles, once the image has loaded, and set them moving. */
-function addBubbles(figure, hero, isLive) {
+/** Ring the lens with the image's bubbles, once the image has loaded, and set them moving in `mood`. */
+function addBubbles(figure, hero, isLive, mood) {
   const circle = letteringCircle(hero);
   const boxes = hero.bubbles.map(({ d }) => boxOf(d));
   const shifts = ringAround(boxes, circle);
@@ -50,7 +50,7 @@ function addBubbles(figure, hero, isLive) {
   const { svg, bubbles } = ringSvg(hero, shifts, frame);
   fitLens(figure, frame, circle);
   figure.prepend(svg);
-  moveWithBands(bubbles, shifts.map((s) => s.direction), isLive, 'calm');
+  moveWithBands(bubbles, shifts.map((s) => s.direction), isLive, mood);
 }
 
 /**
@@ -58,15 +58,18 @@ function addBubbles(figure, hero, isLive) {
  * @param {object} [options] passed to createLocationZoom (zoom, duration, viaAll), plus
  * @param {'line'|'blue'} [options.tone] 'line': black lines on white (default);
  *   'blue': the map in the bubbles' blue with white lines and names, all blue and white
+ * @param {'calm'|'aggressive'} [options.mood] how hard the bubbles move with the sound (see hero-visualisers.js)
  * @returns the figure's `element` and the lens's showLocation / showAll
  */
-export function chorusZoom(base, { tone = 'line', ...options } = {}) {
+export function chorusZoom(base, { tone = 'line', mood = 'aggressive', ...options } = {}) {
   // Between venues this lens flies all the way out to Iceland and back in.
   const zoom = createLocationZoom(base, { viaAll: true, ...options });
-  const figure = el('div', { className: `chorus-zoom${tone === 'blue' ? ' lens-blue' : ''}` }, zoom.element);
+  const figure = el('div', { className: `chorus-zoom chorus-zoom-${mood}${tone === 'blue' ? ' lens-blue' : ''}` }, zoom.element);
   const isLive = liveCheck(figure);
   loadHero()
-    .then((hero) => addBubbles(figure, hero, isLive))
+    .then((hero) => addBubbles(figure, hero, isLive, mood))
     .catch((err) => figure.append(el('p', { className: 'error' }, err.message)));
-  return { ...zoom, element: figure };
+  // Just the venue's name in this lens: no "x tables · y people" line.
+  const showLocation = (location) => zoom.showLocation({ ...location, text: '' });
+  return { ...zoom, showLocation, element: figure };
 }

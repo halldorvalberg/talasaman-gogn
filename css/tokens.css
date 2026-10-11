@@ -159,19 +159,17 @@
 
 /* The blue lens (chorusZoom({ tone: 'blue' })): the map in the bubbles' own
    blue and lettering colour, so lens and bubbles read as one blue-and-white
-   image. Names are lettering-coloured on a deeper-blue outline (so the small
-   details line reaches 7:1); the pin turns lettering-coloured so it shows on
-   blue. Defined on :root (so the contrast checker can read them), following
+   image, with no rim. Names are lettering-coloured with an outline in exactly
+   the map's blue; the pin turns lettering-coloured so it shows on blue. Defined on :root (so the contrast checker can read them), following
    --hero-bubble in every theme and style. */
 :root {
   --lens-blue-paper: var(--hero-bubble);
   --lens-blue-ink: var(--on-hero-bubble);
-  --lens-blue-halo: color-mix(in oklab, var(--hero-bubble) 72%, #141a24);
 }
 .lens-blue {
   --lens-paper: var(--lens-blue-paper);
   --lens-ink: var(--lens-blue-ink);
   --lens-pin: var(--lens-blue-ink);
-  --lens-rim: var(--lens-blue-ink);
-  --lens-halo: var(--lens-blue-halo);
+  --lens-rim: transparent; /* no circle: the lens melts into the bubbles */
+  --lens-halo: var(--lens-blue-paper); /* exactly the map's blue */
 }
